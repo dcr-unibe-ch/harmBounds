@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/CTU-Bern/harmBounds/workflows/R-CMD-check/badge.svg)](https://github.com/CTU-Bern/harmBounds/actions)
+[![R-CMD-check](https://github.com/dcr-unibe-ch/harmBounds/workflows/R-CMD-check/badge.svg)](https://github.com/dcr-unibe-ch/harmBounds/actions)
 <!-- badges: end -->
 
 The harmBounds package calculates stopping probabilities, defines
@@ -40,7 +40,7 @@ The package can be installed from [GitHub](https://github.com/) with:
 
 ``` r
 # install.packages("devtools")
-devtools::install_github("CTU-Bern/harmBounds")
+devtools::install_github("dcr-unibe-ch/harmBounds")
 ```
 
 ## Calculation of boundaries
@@ -143,7 +143,7 @@ hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
 plot(hb)
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" alt="" width="100%" />
 
 Where the bars indicate the time points of the interim analysis with the
 rejection region in red, and the dashed line represents the expectation
@@ -156,7 +156,7 @@ hb<-getHarmBound(nevents = 0:100, alpha_test = 0.025, pH0 = 0.5, maxevents = 150
 plot(hb) 
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-8-1.png" alt="" width="100%" />
 
 Observed data can be added as vector with 0 and 1, indicated the
 sequence of the groups in which events occurred (0 being the control and
@@ -168,8 +168,8 @@ eventgroups<-rbinom(n = 100, size = 1, prob = 0.5)
 plot(hb,observed=eventgroups) 
 ```
 
-<img src="man/figures/README-unnamed-chunk-9-1.png" width="100%" /> The
-boundary is not breached at any of the 10 interim analysis.
+<img src="man/figures/README-unnamed-chunk-9-1.png" alt="" width="100%" />
+The boundary is not breached at any of the 10 interim analysis.
 
 Or with continuous monitoring:
 
@@ -180,7 +180,7 @@ eventgroups<-rbinom(n = 100, size = 1, prob = 0.5)
 plot(hb, observed = eventgroups) 
 ```
 
-<img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-10-1.png" alt="" width="100%" />
 
 ## Operating characteristics
 
@@ -280,13 +280,13 @@ hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025,
 plot(hb, which = "abs_stopping")
 ```
 
-<img src="man/figures/README-unnamed-chunk-12-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-12-1.png" alt="" width="100%" />
 
 ``` r
 plot(hb, which = "cum_stopping")
 ```
 
-<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-13-1.png" alt="" width="100%" />
 
 We can also specify a vector of alternatives and plot the cumulative
 stopping probabilities or the expected number of events for each
@@ -298,13 +298,13 @@ hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
 plot(hb, which = "opchar_stop")
 ```
 
-<img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-14-1.png" alt="" width="100%" />
 
 ``` r
 plot(hb, which = "opchar_n")
 ```
 
-<img src="man/figures/README-unnamed-chunk-14-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-14-2.png" alt="" width="100%" />
 
 ## Choosing the test-wise alpha
 
@@ -337,7 +337,7 @@ hbd %>%
     scale_y_continuous(breaks=seq(0,1,by=0.2))
 ```
 
-<img src="man/figures/README-unnamed-chunk-15-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-15-1.png" alt="" width="100%" />
 
 ``` r
 
@@ -350,7 +350,7 @@ hbd %>%
     scale_y_continuous(limits=c(0, 150))
 ```
 
-<img src="man/figures/README-unnamed-chunk-15-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-15-2.png" alt="" width="100%" />
 
 or on the transformed risk ratio scale:
 
@@ -377,7 +377,7 @@ hbd %>%
     scale_y_continuous(breaks=seq(0,1,by=0.2))
 ```
 
-<img src="man/figures/README-unnamed-chunk-16-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-16-1.png" alt="" width="100%" />
 
 The step-wise alpha that leads to a reasonable stopping probability
 under an appropriate alternative can be selected. However, the steepness
@@ -425,7 +425,7 @@ hbd %>%
     labs(colour="Number of IAs")
 ```
 
-<img src="man/figures/README-unnamed-chunk-18-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-18-1.png" alt="" width="100%" />
 
 To substantially decrease the total error rates (i.e. get steeper
 curves), we would need a higher total number of events:
@@ -452,4 +452,4 @@ hbd %>%
     labs(colour="Total number of events")
 ```
 
-<img src="man/figures/README-unnamed-chunk-19-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-19-1.png" alt="" width="100%" />
