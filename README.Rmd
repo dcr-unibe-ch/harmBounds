@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 # harmBounds
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/CTU-Bern/harmBounds/workflows/R-CMD-check/badge.svg)](https://github.com/CTU-Bern/harmBounds/actions)
+[![R-CMD-check](https://github.com/dcr-unibe-ch/harmBounds/workflows/R-CMD-check/badge.svg)](https://github.com/dcr-unibe-ch/harmBounds/actions)
 <!-- badges: end -->
 
 The harmBounds package calculates stopping probabilities, defines stopping boundaries and generates plots for safety monitoring using an event based approach.
@@ -36,7 +36,7 @@ The package can be installed from [GitHub](https://github.com/) with:
 
 ```{r, eval=FALSE}
 # install.packages("devtools")
-devtools::install_github("CTU-Bern/harmBounds")
+devtools::install_github("dcr-unibe-ch/harmBounds")
 ```
 
 ```{r, echo=FALSE, results="hide", warning=FALSE, message=FALSE}
