@@ -130,7 +130,7 @@ harmboundPlot<-function(harmbound,
 }
 
 
-#' Plot absolute stopping probs
+#' Plot absolute stopping probabilities
 #'
 #' @param harmbound harmbounds objects as generated using the getHarmBound function
 #'
@@ -163,7 +163,7 @@ absstopPlot<-function(harmbound) {
 
 
 
-#' Plot cumulative stopping probs
+#' Plot cumulative stopping probabilities
 #'
 #' @param harmbound harmbounds objects as generated using the getHarmBound function
 #'
@@ -198,7 +198,7 @@ cumstopPlot<-function(harmbound) {
 
 
 
-#' Plot cumulative stopping probability by hypothesis
+#' Plot cumulative stopping probabilities by hypothesis
 #'
 #' @param harmbound harmbounds objects as generated using the getHarmBound function
 #'

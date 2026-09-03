@@ -2,7 +2,7 @@
 % Please edit documentation in R/harmbound_plot.R
 \name{absstopPlot}
 \alias{absstopPlot}
-\title{Plot absolute stopping probs}
+\title{Plot absolute stopping probabilities}
 \usage{
 absstopPlot(harmbound)
 }
@@ -13,7 +13,7 @@ absstopPlot(harmbound)
 barplot with stopping probabilities under H0 and optionally H1
 }
 \description{
-Plot absolute stopping probs
+Plot absolute stopping probabilities
 }
 \examples{
 harmbound<-getHarmBound(nevents=seq(10,100,by=10),alpha_test=0.025,pH0=0.5,pH1=c(0.6,0.7,0.8))

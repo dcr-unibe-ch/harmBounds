@@ -1,5 +1,6 @@
 
-#' Simulate safety stopping values.
+#' Simulate safety stopping
+#'
 #'	The effect can be given as proportion of events in the experimental group (pH1),
 #'	the risk difference (rdH1), risk ratio (rrH1) or odds ratio (orH1).
 #'

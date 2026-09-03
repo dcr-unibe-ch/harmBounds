@@ -1,8 +1,6 @@
 # Functions for monitoring harm boundary
 # --------------------------------------------------
 
-#' getAlphaPerTest
-#'
 #' Test-wise alpha necessary to control the overall type I error at a specified level (0.05 by default)
 #'
 #' @param nevents vector with number of events at which an interim analysis is done
@@ -402,7 +400,7 @@ pNS <- function(Bounds, pH0=0.5, returnPns=FALSE){
 }
 
 
-#' Convert the proportion of events in the intervention groups to risk differences and ratios and vice versa.
+#' Convert the proportion of events in the intervention groups to risk differences and ratios (and vice versa)
 #'
 #' @param eprop proportion of events in intervention group
 #' @param etotal total number of events
