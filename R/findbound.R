@@ -19,21 +19,12 @@
 #'
 findbound<-function(n, alpha_test=0.025, pH0 = 0.5, alternative="greater") {
  
-  pvs<-vapply(1:n,function(x) 
-	binom.test(x=x, n=n, p = pH0, alternative=alternative)$p.value,
-	numeric(1))
-	
-  xlim<-which(pvs<alpha_test)
-
-  if (!is.null(xlim)) {
-    if (alternative=="less") {
-      xlim<-max(xlim)
-    }
-    if (alternative=="greater") {
-      xlim<-min(xlim)
-    }
-  } else {
-    xlim<-NA
-  }
-  return(xlim)
+	if (alternative=="greater") {
+		xlim<-qbinom(p = 1-alpha_test, size = n, prob = pH0) + 1
+	}
+	if (alternative=="less") {
+		xlim<-qbinom(p = alpha_test, size = n, prob = pH0) - 1
+	}
+	return(xlim)
 }
+
