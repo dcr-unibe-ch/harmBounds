@@ -2,7 +2,7 @@
 
 ## harmBounds 1.0.0
 
-add vignette
+add vignette update findbound
 
 ## harmBounds 0.4.0
 
