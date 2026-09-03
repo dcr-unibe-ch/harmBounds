@@ -2,9 +2,7 @@
 % Please edit documentation in R/sim_safety_stop.R
 \name{simSafetyStop}
 \alias{simSafetyStop}
-\title{Simulate safety stopping values.
-The effect can be given as proportion of events in the experimental group (pH1),
-the risk difference (rdH1), risk ratio (rrH1) or odds ratio (orH1).}
+\title{Simulate safety stopping}
 \usage{
 simSafetyStop(
   nevents,
@@ -42,7 +40,6 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 list with a dataframe with number of events in each group plus upper limit for stopping and indicator for whether stopped, plus indicators number of stops and time points at first stop
 }
 \description{
-Simulate safety stopping values.
 The effect can be given as proportion of events in the experimental group (pH1),
 the risk difference (rdH1), risk ratio (rrH1) or odds ratio (orH1).
 }

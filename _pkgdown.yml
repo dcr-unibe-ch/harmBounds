@@ -1,0 +1,28 @@
+url: https://dcr-unibe-ch.github.io/harmBounds/
+template:
+  bootstrap: 5
+  light-switch: true
+navbar:
+  structure:
+    right: [search, github]
+
+reference:
+- title: Calculate stopping boundaries
+  contents:
+  - getHarmBound
+  - convertRisks
+  - findbound
+  - getAlphaPerTest
+  
+- title: Plot stopping boundaries
+  contents:
+  - plot.harmbound
+  - harmboundPlot
+  - absstopPlot
+  - cumstopPlot
+  - opcharStopPlot
+  - opcharNPlot
+
+- title: Simulate safety stopping values
+  contents:    
+  - simSafetyStop

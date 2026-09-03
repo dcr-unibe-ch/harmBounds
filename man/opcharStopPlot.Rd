@@ -2,7 +2,7 @@
 % Please edit documentation in R/harmbound_plot.R
 \name{opcharStopPlot}
 \alias{opcharStopPlot}
-\title{Plot cumulative stopping probability by hypothesis}
+\title{Plot cumulative stopping probabilities by hypothesis}
 \usage{
 opcharStopPlot(harmbound)
 }
@@ -13,7 +13,7 @@ opcharStopPlot(harmbound)
 line plot with the cumulative stopping for all alternatives
 }
 \description{
-Plot cumulative stopping probability by hypothesis
+Plot cumulative stopping probabilities by hypothesis
 }
 \examples{
 harmbound<-getHarmBound(nevents=seq(10,100,by=10),alpha_test=0.025,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/harmBound_functions.R
 \name{convertRisks}
 \alias{convertRisks}
-\title{Convert the proportion of events in the intervention groups to risk differences and ratios and vice versa.}
+\title{Convert the proportion of events in the intervention groups to risk differences and ratios (and vice versa)}
 \usage{
 convertRisks(
   eprop = NULL,
@@ -37,7 +37,7 @@ vector with risks in control and intervention group (r0, r1),
 the risk difference (rd), risk ratio (rr) and odds ratio (or)
 }
 \description{
-Convert the proportion of events in the intervention groups to risk differences and ratios and vice versa.
+Convert the proportion of events in the intervention groups to risk differences and ratios (and vice versa)
 }
 \examples{
 convertRisks(eprop=0.5,etotal=100,n0=200)

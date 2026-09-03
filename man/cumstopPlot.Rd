@@ -2,7 +2,7 @@
 % Please edit documentation in R/harmbound_plot.R
 \name{cumstopPlot}
 \alias{cumstopPlot}
-\title{Plot cumulative stopping probs}
+\title{Plot cumulative stopping probabilities}
 \usage{
 cumstopPlot(harmbound)
 }
@@ -13,7 +13,7 @@ cumstopPlot(harmbound)
 barplot with cumulative stopping probabilities under H0 and optionally H1
 }
 \description{
-Plot cumulative stopping probs
+Plot cumulative stopping probabilities
 }
 \examples{
 harmbound<-getHarmBound(nevents=seq(10,100,by=10),alpha_test=0.025,pH0=0.5,pH1=c(0.6,0.7,0.8))

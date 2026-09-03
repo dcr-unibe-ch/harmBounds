@@ -2,7 +2,7 @@
 % Please edit documentation in R/harmBound_functions.R
 \name{getAlphaPerTest}
 \alias{getAlphaPerTest}
-\title{getAlphaPerTest}
+\title{Test-wise alpha necessary to control the overall type I error at a specified level (0.05 by default)}
 \usage{
 getAlphaPerTest(
   nevents,

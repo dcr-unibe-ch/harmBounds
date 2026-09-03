@@ -5,3 +5,7 @@ R/harmFunction_documentation.txt
 R/safety_boundary_sim.r
 ^\.github$
 ^README\.Rmd$
+^\.positai$
+^\.claude$
+^_pkgdown\.yml$
+^docs$

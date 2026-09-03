@@ -45,14 +45,14 @@ bounds has a row for each interim analysis and columns for
 number of events (events),
 number of events in control and intervention group that would lead to a stop
 (events_intervention, events_control), and the nominal alpha for each test (alpha_test).
- stopprob has a row for each interim analysis and columns for
+stopprob has a row for each interim analysis and columns for
 number of events (events),
 the hypothesis (pH),
 the stopping probability (stop_prob), and
 the cumulative stopping probability (cum_stop_prob)
-opchar has a row for each hypothesis (null plus each alternative) and columns 
+opchar has a row for each hypothesis (null plus each alternative) and columns
 for the assumed proportion of events in the intervention group (p),
-the cumulative stopping probabilities (cum_stop_prob) and 
+the cumulative stopping probabilities (cum_stop_prob) and
 the expected total number of events (expected_events)
 for the null and each alternative.
 }
