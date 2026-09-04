@@ -19,7 +19,7 @@
 #'
 #' @export
 #'
-#' @importFrom stats rbinom
+#' @importFrom stats rbinom 
 #'
 #' @examples
 #'	set.seed(1)	
@@ -42,38 +42,14 @@ simSafetyStop <- function(nevents,
 	
 	if (!is.null(rdH1) | !is.null(rrH1) | !is.null(orH1)) {
 		
-		if (!is.null(rrH1)) {	
-			#for risk ratio, pH1 does not depend on r0 or n:
-			pH1<-rrH1*pH0/(1-pH0)/(1+rrH1*pH0/(1-pH0))
-			cri<-convertRisks(rr=rrH1, r0=0.5, n0=(1-pH0), n1=pH0)
-			stopifnot(abs(pH1 - cri["eprop"])<10^(-10))	
-		
-		} 
-		if (!is.null(orH1)) {
-			#for odds, pH1 depends on r0  
+		if (!is.null(rrH1)) {
+			r0<-0.5
+		} else {
 			if (is.null(r0)) {
-				stop("r0 has to be given if the effect is given as odds ratio (orH1).")
+				stop("r0 has to be given if the effect is given as 'orH1' or 'rdH1'.")
 			}
-			rr<-orH1/(1-r0+orH1*r0)
-			pH1<-rr*pH0/(1-pH0)/(1+rr*pH0/(1-pH0))
-			cri<-convertRisks(or=orH1, r0=r0, n0=(1-pH0), n1=pH0)
-			pH1 <- cri["eprop"]	
-		}	
-		
-		if (!is.null(rdH1)) {
-			#for risk difference, pH1 depends on r0 and n 
-			if (is.null(n)) {
-				stop("n has to be given if the effect is given as risk difference (rdH1).")
-			}
-			if (is.null(r0)) {
-				stop("r0 has to be given if the effect is given as risk difference (rdH1).")
-			}
-			n0 = pH0*n
-			n1 = (1-pH0)*n
-			
-			cri<-convertRisks(rd=rdH1, rr=rrH1, r0=r0, n0=n0, n1=n1)
-			pH1 <- cri["eprop"]	
-		}	
+		}
+		pH1<-convertRisks(rd=rdH1, rr=rrH1, or=orH1, r0=r0, n0=(1-pH0), n1=pH0)[,"eprop"]
 	}
 	
 	group<-rbinom(max(nevents),1,pH1)

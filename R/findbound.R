@@ -10,7 +10,7 @@
 #'
 #' @export
 #'
-#' @importFrom stats binom.test
+#' @importFrom stats qbinom
 #'
 #' @examples
 #'	findbound(n=20, alpha_test=0.025, pH0 = 0.5, alternative="greater")

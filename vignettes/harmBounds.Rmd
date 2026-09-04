@@ -36,7 +36,7 @@ The procedure is computationally efficient and fully reproducible, as all calcul
 
 ## Calculation of boundaries
 
-Stopping boundaries can be calculated with function *getHarmBound*.
+Stopping boundaries can be calculated with function `getHarmBound`.
 Let's assume a trial with 10 safety interim analyses after every 10 events (combined over both groups) up to a total of 100 events and a nominal test-wise alpha of 0.025.
 
 ```{r}
@@ -49,35 +49,61 @@ The data frame *bounds* specifies the boundaries at each interim analysis, *even
 
 In the example above, the overall Type I error of the safety testing is `r round(hb$opchar$cum_stop_prob*100,1)`%. If we stop at 100 total events (by default, even if the boundary is not breached), the expected number of events is `r round(hb$opchar$expected_events,0)`.
 
-Typically, the trial might not be stopped at the last interim analysis, which can be specified using the *maxevents* option:
+Typically, the trial might not be stopped at the last interim analysis, which can be specified using the *maxevents* option. The option only influences the expected events.
 
 ```{r}
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
+  maxevents = 150)
 hb$opchar
 ```
 
-If we would like to control the Type I error at a specific level (which we do not necessarily recommend, see above), the test-wise alpha can be obtained using function *getAlphaPerTest*.
+## Alternative specification of rejection criteria
+
+Instead of using an alpha for each test, we can also control the overall family-wise type I error rate 
+  at a specific level (even though we do not necessarily recommend that).
+  Refer to [Choosing the test-wise alpha](#sec-alpha) for more details.
+  
+  
+```{r}
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), totalAlpha = 0.05, pH0 = 0.5)
+hb$opchar
+```  
+
+The overall stopping probability under H0 (the type I error) is `r round(hb$opchar$cum_stop_prob*100,1)`%, i.e. as close to 5% as possible (given the discrete nature of the test).If a strict control at 5% would required a *totalAlpha* of 0.049 would have to be chosen.
+
+Another more sensible option would be to target the type II error (or the power) for a specific alternative. This option requires the specification of an alternative, e.g. assuming that 60% of the events occuring in the experimental group would indicate a safety problem (see [Operating characteristics](#sec-opchar) for more details about the alternatives).
 
 ```{r}
-alphaPerTest<-getAlphaPerTest(nevents = seq(10, 100, by = 10), pH0 = 0.5, totalAlpha = 0.05)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), pH0 = 0.5,
+  power = 0.8, pH1 = 0.6)
+hb$opchar
+```  
+
+Specifiying *totalAlpha* or *power* is much slower as it relies on an iterative procedure ro determine the alpha used at each step. It could make sense to first determine the alpha per test and then use it directly in `getHarmBound`.
+
+This can be done separately using function *getAlphaPerTest*:
+
+```{r}
+alphaPerTest<-getAlphaPerTest(nevents = seq(10, 100, by = 10), 
+  totalAlpha = 0.05, pH0 = 0.5)
 
 alphaPerTest
 
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = alphaPerTest, pH0 = 0.5, maxevents = 150)
+alphaPerTest<-getAlphaPerTest(nevents = seq(10, 100, by = 10),
+  power = 0.8,  pH0 = 0.5, pH1 = 0.6)
 
-hb$opchar
+alphaPerTest
 
 ```
 
-The overall Type I error is `r round(hb$opchar$cum_stop_prob*100,1)`%, i.e. as close to 5% as possible (given the discrete nature of the test).
-Note that with this example that is slightly higher than 5%. If a strict control at 5% would required a *totalAlpha* of 0.049 would have to be chosen.
 
-## Plotting of boundaries
+## Plotting of the boundaries
 
 The boundaries can be plotted using *harmboundPlot* (or the harmbound.plot-method):  
 
 ```{r message=FALSE, warning=FALSE}
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
+  maxevents = 150)
 plot(hb)
 ```
 
@@ -87,31 +113,22 @@ Where the bars indicate the time points of the interim analysis with the rejecti
 Continuous monitoring could also be implemented:
 
 ```{r message=FALSE, warning=FALSE}
-hb<-getHarmBound(nevents = 0:100, alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
+hb<-getHarmBound(nevents = 0:100, alpha_test = 0.025, pH0 = 0.5, 
+  maxevents = 150)
 plot(hb) 
 ```
 
-Observed data can be added as vector with 0 and 1, indicated the sequence of the groups in which events occurred (0 being the control and 1 the intervention group).
+Observed data can be added as vector with 0 and 1, indicated the sequence of the groups in which events occurred (0 being the control and 1 the intervention group). In this example, the boundary is not breached.
 
 ```{r message=FALSE, warning=FALSE}
 set.seed(123)
 eventgroups<-rbinom(n = 100, size = 1, prob = 0.5)
 plot(hb,observed=eventgroups) 
 ```
-The boundary is not breached at any of the 10 interim analysis.
 
-Or with continuous monitoring:
+## Operating characteristics  {#sec-opchar}
 
-```{r message=FALSE, warning=FALSE}
-hb<-getHarmBound(nevents = 0:100, alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
-set.seed(123)
-eventgroups<-rbinom(n = 100, size = 1, prob = 0.5)
-plot(hb, observed = eventgroups) 
-```
-
-## Operating characteristics
-
-Stopping probabilities and expected number of events can be obtained for alternative scenarios with the *getHarmBound* function.
+Stopping probabilities and expected number of events can be obtained for alternative scenarios with the `getHarmBound` function.
 The alternative hypothesis can be specified as 
 
 - pH1: the proportion of the events in the intervention group, 
@@ -128,7 +145,8 @@ To stay in the event-based setting, we recommend using the first two options (pH
 
 ```{r}
 #with proportion of events in the intervention group:
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5, pH1 = 0.6, maxevents = 150)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
+  pH1 = 0.6, maxevents = 150)
 hb
 ```
 Note that *stopprob* is now of length two with a data frame for each condition.
@@ -138,7 +156,7 @@ Because of the higher probability of early stopping, the expected number of even
 
 The (cumulative) stopping probabilities at each step can be plotted using *absstopPlot* or *cumstopPlot* (or the harmbound.plot-methods). We now using more than one alternative to make it more interesting:
 
-```{r}
+```{r, fig.height=6, fig.width=8}
 hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, 
   pH0 = 0.5, pH1 = c(0.6, 0.7, 0.8) , maxevents = 150)
 plot(hb, which = "abs_stopping")
@@ -157,13 +175,15 @@ plot(hb, which = "opchar_stop")
 plot(hb, which = "opchar_n")
 ```
 
-## Choosing the test-wise alpha
+## Choosing the test-wise alpha {#sec-alpha}
 
-To choose the test-wise alpha, we recommend to control the power rather than the Type I error.
+To choose the test-wise alpha, we recommend to control the power rather than the type I error.
   I.e. to check that a sufficient proportion of trials are stopped under 
   an appropriate alternative hypothesis (reflecting a safety problem).
 
-To do that we would check the stopping probabilities for a grid of alphas:
+A target power can be specified directly in `getHarmbound` (see above).
+
+To get a more complete picture, we would check the stopping probabilities for a grid of alphas:
 
 ```{r, warning=FALSE}
 alphaPerTest <- getAlphaPerTest(nevents = seq(10, 100, by = 10), pH0 = 0.5,
@@ -217,7 +237,7 @@ ggplot(hbd, aes(x = rr, y = cum_stop_prob, colour=alpha)) +
 ```
 
 
-The step-wise alpha that leads to a reasonable stopping probability under an appropriate alternative can be selected.
+The test-wise alpha that leads to a reasonable stopping probability under an appropriate alternative can be selected.
 However, the steepness of the curve is not influenced by the alpha. We can only choose between making more Type I or II errors but not reduce the overall error rate.
 
 ```{r, echo=FALSE, include=FALSE}

@@ -6,21 +6,26 @@
 \usage{
 getHarmBound(
   nevents,
-  alpha_test,
+  alpha_test = NULL,
+  totalAlpha = NULL,
+  power = NULL,
   pH0,
   maxevents = NULL,
   pH1 = NULL,
   rrH1 = NULL,
   orH1 = NULL,
   rdH1 = NULL,
-  r0 = NULL,
-  n = NULL
+  r0 = NULL
 )
 }
 \arguments{
 \item{nevents}{vector with number of events (over both arms) at which an interim analysis is done}
 
 \item{alpha_test}{the nominal alpha level to use for each test}
+
+\item{totalAlpha}{target overall family-wise type I error}
+
+\item{power}{target power at the specified alternative}
 
 \item{pH0}{proportion of events in the intervention arm under the null hypothesis,
 typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
@@ -36,8 +41,6 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 \item{rdH1}{alternative specification of alternative as risk difference (intervention - control). Requires the control proportion (r0) and the number of participants (n).}
 
 \item{r0}{risk in the control group. Required if the alternative is given as risk difference or odds ratio.}
-
-\item{n}{total number of participants. Required if the alternative is given as risk difference.}
 }
 \value{
 a list with 3 data.frames: bounds, stopprob and opchar.
@@ -58,19 +61,36 @@ for the null and each alternative.
 }
 \description{
 Calculates the boundaries at each interim analysis, i.e. the number of events in the intervention group
-that would lead to a stopping of the trial based on a binomial exact test,
-assuming that the events should be equally distributed amont both groups.
-The indicated scenario (and all more extreme) would lead to a rejection of H0 (equal distribution) and a stopping for safety.
+that would lead to a stopping of the trial based binomial exact tests,
+assuming that the events should be equally distributed among both groups.
+The indicated scenario (and all more extreme)
+would lead to a rejection of H0 (equal distribution) and a stopping for safety.
+}
+\details{
+The rejection region for the binomial exact tests must be given for either
+each test (alpha_test), overall (totalAlpha, the family-wise error rate) or
+by the targetted power for the specified alternative.
 }
 \examples{
+
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5)
 #adding an alternative
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6)
-#assume that a total of 150 events might occur
+
+#assume that a total of 150 events might occur (for the expected events)
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6, maxevents=150)
-#or several alternatives
+
+#several alternatives
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5,
 pH1 = seq(0.6,0.8,by=0.05), maxevents=150)
-#or as risk ratio
+
+#using a risk ratio to specify the alternative
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, rrH1=1.5, maxevents=150)
+
+# define the test so that an family-wise type I error of 5\% is achieved
+getHarmBound(nevents=c(10,50,100), totalAlpha=0.05, pH0=0.5)
+
+# define the test so that an over power of 80\% is achieved
+# needs an alternative
+getHarmBound(nevents=c(10,50,100), power=0.8, pH0=0.5, pH1=0.6)
 }
