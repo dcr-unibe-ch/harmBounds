@@ -1,5 +1,10 @@
 # Changelog
 
+## harmBounds 1.1.0
+
+allow setting of totalAlpha or power in getHarmBound adapt
+getAlphaPerTest accordingly
+
 ## harmBounds 1.0.0
 
 add vignette update findbound

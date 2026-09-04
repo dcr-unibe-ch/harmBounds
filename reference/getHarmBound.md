@@ -2,8 +2,8 @@
 
 Calculates the boundaries at each interim analysis, i.e. the number of
 events in the intervention group that would lead to a stopping of the
-trial based on a binomial exact test, assuming that the events should be
-equally distributed amont both groups. The indicated scenario (and all
+trial based binomial exact tests, assuming that the events should be
+equally distributed among both groups. The indicated scenario (and all
 more extreme) would lead to a rejection of H0 (equal distribution) and a
 stopping for safety.
 
@@ -12,15 +12,16 @@ stopping for safety.
 ``` r
 getHarmBound(
   nevents,
-  alpha_test,
+  alpha_test = NULL,
+  totalAlpha = NULL,
+  power = NULL,
   pH0,
   maxevents = NULL,
   pH1 = NULL,
   rrH1 = NULL,
   orH1 = NULL,
   rdH1 = NULL,
-  r0 = NULL,
-  n = NULL
+  r0 = NULL
 )
 ```
 
@@ -34,6 +35,14 @@ getHarmBound(
 - alpha_test:
 
   the nominal alpha level to use for each test
+
+- totalAlpha:
+
+  target overall family-wise type I error
+
+- power:
+
+  target power at the specified alternative
 
 - pH0:
 
@@ -72,11 +81,6 @@ getHarmBound(
   risk in the control group. Required if the alternative is given as
   risk difference or odds ratio.
 
-- n:
-
-  total number of participants. Required if the alternative is given as
-  risk difference.
-
 ## Value
 
 a list with 3 data.frames: bounds, stopprob and opchar. bounds has a row
@@ -92,9 +96,16 @@ intervention group (p), the cumulative stopping probabilities
 (cum_stop_prob) and the expected total number of events
 (expected_events) for the null and each alternative.
 
+## Details
+
+The rejection region for the binomial exact tests must be given for
+either each test (alpha_test), overall (totalAlpha, the family-wise
+error rate) or by the targetted power for the specified alternative.
+
 ## Examples
 
 ``` r
+
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5)
 #> $bounds
 #>   events events_intervention events_control alpha_test
@@ -145,7 +156,8 @@ getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6)
 #> 
 #> attr(,"class")
 #> [1] "harmbound" "list"     
-#assume that a total of 150 events might occur
+
+#assume that a total of 150 events might occur (for the expected events)
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6, maxevents=150)
 #> $bounds
 #>   events events_intervention events_control alpha_test
@@ -174,7 +186,8 @@ getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6, maxevents
 #> 
 #> attr(,"class")
 #> [1] "harmbound" "list"     
-#or several alternatives
+
+#several alternatives
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5,
 pH1 = seq(0.6,0.8,by=0.05), maxevents=150)
 #> $bounds
@@ -232,7 +245,8 @@ pH1 = seq(0.6,0.8,by=0.05), maxevents=150)
 #> 
 #> attr(,"class")
 #> [1] "harmbound" "list"     
-#or as risk ratio
+
+#using a risk ratio to specify the alternative
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, rrH1=1.5, maxevents=150)
 #> $bounds
 #>   events events_intervention events_control alpha_test
@@ -258,6 +272,60 @@ getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, rrH1=1.5, maxevent
 #>     p  rr cum_stop_prob expected_events hyp
 #> 1 0.5 1.0    0.03758441        146.4090  H0
 #> 2 0.6 1.5    0.50668952        110.0028  H1
+#> 
+#> attr(,"class")
+#> [1] "harmbound" "list"     
+
+# define the test so that an family-wise type I error of 5% is achieved
+getHarmBound(nevents=c(10,50,100), totalAlpha=0.05, pH0=0.5)
+#> $bounds
+#>   events events_intervention events_control alpha_test
+#> 1     10                   9              1 0.03245429
+#> 2     50                  33             17 0.03245429
+#> 3    100                  60             40 0.03245429
+#> 
+#> $stopprob
+#> $stopprob$`0.5`
+#>   events  pH hyp  stop_prob cum_stop_prob
+#> 1     10 0.5  H0 0.01074219    0.01074219
+#> 2     50 0.5  H0 0.01490030    0.02564249
+#> 3    100 0.5  H0 0.02085634    0.04649882
+#> 
+#> 
+#> $opchar
+#>     p cum_stop_prob expected_events hyp
+#> 1 0.5    0.04649882        98.28819  H0
+#> 
+#> attr(,"class")
+#> [1] "harmbound" "list"     
+
+# define the test so that an over power of 80% is achieved
+# needs an alternative
+getHarmBound(nevents=c(10,50,100), power=0.8, pH0=0.5, pH1=0.6)
+#> $bounds
+#>   events events_intervention events_control alpha_test
+#> 1     10                   8              2  0.1013193
+#> 2     50                  31             19  0.1013193
+#> 3    100                  57             43  0.1013193
+#> 
+#> $stopprob
+#> $stopprob$`0.5`
+#>   events  pH hyp  stop_prob cum_stop_prob
+#> 1     10 0.5  H0 0.05468750     0.0546875
+#> 2     50 0.5  H0 0.04648929     0.1011768
+#> 3    100 0.5  H0 0.05797765     0.1591544
+#> 
+#> $stopprob$`0.6`
+#>   events  pH hyp stop_prob cum_stop_prob
+#> 1     10 0.6  H1 0.1672898     0.1672898
+#> 2     50 0.6  H1 0.3260615     0.4933512
+#> 3    100 0.6  H1 0.3043610     0.7977123
+#> 
+#> 
+#> $opchar
+#>     p cum_stop_prob expected_events hyp
+#> 1 0.5     0.1591544        92.75366  H0
+#> 2 0.6     0.7977123        68.64085  H1
 #> 
 #> attr(,"class")
 #> [1] "harmbound" "list"     

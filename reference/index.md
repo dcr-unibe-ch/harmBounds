@@ -10,8 +10,8 @@
 - [`findbound()`](https://dcr-unibe-ch.github.io/harmBounds/reference/findbound.md)
   : Find stopping boundary via binomial exact tests
 - [`getAlphaPerTest()`](https://dcr-unibe-ch.github.io/harmBounds/reference/getAlphaPerTest.md)
-  : Test-wise alpha necessary to control the overall type I error at a
-  specified level (0.05 by default)
+  : Test-wise alpha necessary to control either the family-wise type I
+  error or the power at a specified level
 
 ## Plot stopping boundaries
 

@@ -28,7 +28,7 @@ to a specific type of event.
 
 ## Calculation of boundaries
 
-Stopping boundaries can be calculated with function *getHarmBound*.
+Stopping boundaries can be calculated with function `getHarmBound`.
 Let’s assume a trial with 10 safety interim analyses after every 10
 events (combined over both groups) up to a total of 100 events and a
 nominal test-wise alpha of 0.025.
@@ -86,51 +86,90 @@ In the example above, the overall Type I error of the safety testing is
 is not breached), the expected number of events is 96.
 
 Typically, the trial might not be stopped at the last interim analysis,
-which can be specified using the *maxevents* option:
+which can be specified using the *maxevents* option. The option only
+influences the expected events.
 
 ``` r
 
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
+  maxevents = 150)
 hb$opchar
 #>     p cum_stop_prob expected_events hyp
 #> 1 0.5    0.07163432        142.2242  H0
 ```
 
-If we would like to control the Type I error at a specific level (which
-we do not necessarily recommend, see above), the test-wise alpha can be
-obtained using function *getAlphaPerTest*.
+## Alternative specification of rejection criteria
+
+Instead of using an alpha for each test, we can also control the overall
+family-wise type I error rate at a specific level (even though we do not
+necessarily recommend that). Refer to [Choosing the test-wise
+alpha](#sec-alpha) for more details.
 
 ``` r
 
-alphaPerTest<-getAlphaPerTest(nevents = seq(10, 100, by = 10), pH0 = 0.5, totalAlpha = 0.05)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), totalAlpha = 0.05, pH0 = 0.5)
+hb$opchar
+#>     p cum_stop_prob expected_events hyp
+#> 1 0.5    0.05104241        97.33673  H0
+```
+
+The overall stopping probability under H0 (the type I error) is 5.1%,
+i.e. as close to 5% as possible (given the discrete nature of the
+test).If a strict control at 5% would required a *totalAlpha* of 0.049
+would have to be chosen.
+
+Another more sensible option would be to target the type II error (or
+the power) for a specific alternative. This option requires the
+specification of an alternative, e.g. assuming that 60% of the events
+occuring in the experimental group would indicate a safety problem (see
+[Operating characteristics](#sec-opchar) for more details about the
+alternatives).
+
+``` r
+
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), pH0 = 0.5,
+  power = 0.8, pH1 = 0.6)
+hb$opchar
+#>     p cum_stop_prob expected_events hyp
+#> 1 0.5     0.1980100        87.63776  H0
+#> 2 0.6     0.8018467        52.56440  H1
+```
+
+Specifiying *totalAlpha* or *power* is much slower as it relies on an
+iterative procedure ro determine the alpha used at each step. It could
+make sense to first determine the alpha per test and then use it
+directly in `getHarmBound`.
+
+This can be done separately using function *getAlphaPerTest*:
+
+``` r
+
+alphaPerTest<-getAlphaPerTest(nevents = seq(10, 100, by = 10), 
+  totalAlpha = 0.05, pH0 = 0.5)
 
 alphaPerTest
 #> [1] 0.01760014
 
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = alphaPerTest, pH0 = 0.5, maxevents = 150)
+alphaPerTest<-getAlphaPerTest(nevents = seq(10, 100, by = 10),
+  power = 0.8,  pH0 = 0.5, pH1 = 0.6)
 
-hb$opchar
-#>     p cum_stop_prob expected_events hyp
-#> 1 0.5    0.05104241        144.7846  H0
+alphaPerTest
+#> [1] 0.07693005
 ```
 
-The overall Type I error is 5.1%, i.e. as close to 5% as possible (given
-the discrete nature of the test). Note that with this example that is
-slightly higher than 5%. If a strict control at 5% would required a
-*totalAlpha* of 0.049 would have to be chosen.
-
-## Plotting of boundaries
+## Plotting of the boundaries
 
 The boundaries can be plotted using *harmboundPlot* (or the
 harmbound.plot-method):
 
 ``` r
 
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
+  maxevents = 150)
 plot(hb)
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-5-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-7-1.png)
 
 Where the bars indicate the time points of the interim analysis with the
 rejection region in red, and the dashed line represents the expectation
@@ -140,15 +179,17 @@ Continuous monitoring could also be implemented:
 
 ``` r
 
-hb<-getHarmBound(nevents = 0:100, alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
+hb<-getHarmBound(nevents = 0:100, alpha_test = 0.025, pH0 = 0.5, 
+  maxevents = 150)
 plot(hb) 
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-6-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-8-1.png)
 
 Observed data can be added as vector with 0 and 1, indicated the
 sequence of the groups in which events occurred (0 being the control and
-1 the intervention group).
+1 the intervention group). In this example, the boundary is not
+breached.
 
 ``` r
 
@@ -157,25 +198,12 @@ eventgroups<-rbinom(n = 100, size = 1, prob = 0.5)
 plot(hb,observed=eventgroups) 
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-7-1.png) The boundary is
-not breached at any of the 10 interim analysis.
-
-Or with continuous monitoring:
-
-``` r
-
-hb<-getHarmBound(nevents = 0:100, alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
-set.seed(123)
-eventgroups<-rbinom(n = 100, size = 1, prob = 0.5)
-plot(hb, observed = eventgroups) 
-```
-
-![](harmBounds_files/figure-html/unnamed-chunk-8-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-9-1.png)
 
 ## Operating characteristics
 
 Stopping probabilities and expected number of events can be obtained for
-alternative scenarios with the *getHarmBound* function. The alternative
+alternative scenarios with the `getHarmBound` function. The alternative
 hypothesis can be specified as
 
 - pH1: the proportion of the events in the intervention group, with 0.5
@@ -200,7 +228,8 @@ options (pH1 or rrH1).
 ``` r
 
 #with proportion of events in the intervention group:
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5, pH1 = 0.6, maxevents = 150)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
+  pH1 = 0.6, maxevents = 150)
 hb
 #> $bounds
 #>    events events_intervention events_control alpha_test
@@ -272,14 +301,14 @@ hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025,
 plot(hb, which = "abs_stopping")
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-10-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-11-1.png)
 
 ``` r
 
 plot(hb, which = "cum_stopping")
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-11-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-12-1.png)
 
 We can also specify a vector of alternatives and plot the cumulative
 stopping probabilities or the expected number of events for each
@@ -292,24 +321,26 @@ hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
 plot(hb, which = "opchar_stop")
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-12-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-13-1.png)
 
 ``` r
 
 plot(hb, which = "opchar_n")
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-12-2.png)
+![](harmBounds_files/figure-html/unnamed-chunk-13-2.png)
 
 ## Choosing the test-wise alpha
 
 To choose the test-wise alpha, we recommend to control the power rather
-than the Type I error. I.e. to check that a sufficient proportion of
+than the type I error. I.e. to check that a sufficient proportion of
 trials are stopped under an appropriate alternative hypothesis
 (reflecting a safety problem).
 
-To do that we would check the stopping probabilities for a grid of
-alphas:
+A target power can be specified directly in `getHarmbound` (see above).
+
+To get a more complete picture, we would check the stopping
+probabilities for a grid of alphas:
 
 ``` r
 
@@ -332,7 +363,7 @@ ggplot(hbd, aes(x = p, y = cum_stop_prob, colour=alpha)) +
     scale_y_continuous(breaks=seq(0,1,by=0.2))
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-13-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-14-1.png)
 
 ``` r
 
@@ -345,7 +376,7 @@ ggplot(hbd, aes(x = p, y = expected_events, colour=alpha)) +
     scale_y_continuous(limits=c(0, 150))
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-13-2.png)
+![](harmBounds_files/figure-html/unnamed-chunk-14-2.png)
 
 or on the transformed risk ratio scale:
 
@@ -372,9 +403,9 @@ ggplot(hbd, aes(x = rr, y = cum_stop_prob, colour=alpha)) +
     scale_y_continuous(breaks=seq(0,1,by=0.2))
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-14-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-15-1.png)
 
-The step-wise alpha that leads to a reasonable stopping probability
+The test-wise alpha that leads to a reasonable stopping probability
 under an appropriate alternative can be selected. However, the steepness
 of the curve is not influenced by the alpha. We can only choose between
 making more Type I or II errors but not reduce the overall error rate.
@@ -420,7 +451,7 @@ ggplot(hbd, aes(x = p, y = cum_stop_prob, colour=ni)) +
     labs(colour="Number of IAs")
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-16-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-17-1.png)
 
 To substantially decrease the total error rates (i.e. get steeper
 curves), we would need a higher total number of events:
@@ -447,4 +478,4 @@ ggplot(hbd, aes(x = p, y = cum_stop_prob, colour=ni)) +
     labs(colour="Total number of events")
 ```
 
-![](harmBounds_files/figure-html/unnamed-chunk-17-1.png)
+![](harmBounds_files/figure-html/unnamed-chunk-18-1.png)

@@ -23,7 +23,8 @@ library(harmBounds)
 
 ``` r
 
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
+  maxevents = 150)
 plot(hb)
 ```
 
@@ -58,8 +59,8 @@ do. Check the vignette for further examples.
 - [`findbound()`](https://dcr-unibe-ch.github.io/harmBounds/reference/findbound.md)
   : Find stopping boundary via binomial exact tests
 - [`getAlphaPerTest()`](https://dcr-unibe-ch.github.io/harmBounds/reference/getAlphaPerTest.md)
-  : Test-wise alpha necessary to control the overall type I error at a
-  specified level (0.05 by default)
+  : Test-wise alpha necessary to control either the family-wise type I
+  error or the power at a specified level
 
 ## Plot stopping boundaries
 
