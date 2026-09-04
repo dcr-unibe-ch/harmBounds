@@ -1,13 +1,25 @@
 # Functions for monitoring harm boundary
 # --------------------------------------------------
 
-#' Test-wise alpha necessary to control the overall type I error at a specified level (0.05 by default)
+#' Test-wise alpha necessary to control either 
+#'	the family-wise type I error or the power at a specified level
+#'
+#'	Exactly one of totalAlpha or power have to be specified.
+#' The power requires the specification of an alternative via one of pH1, rrH1, orH1 or rdH1.
 #'
 #' @param nevents vector with number of events at which an interim analysis is done
-#' @param totalAlpha Overall type I error, 0.05 by default
+#' @param totalAlpha target overall family-wise type I error
+#' @param power target power at the specified alternative
 #' @param pH0 proportion of events in the intervention arm under the null hypothesis,
 #'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
 #' @param alpha.interval Range for test-wise alpha, c(10^(-10),0.05) by default
+#' @param maxevents optional maximum number of events expected for the trial (over both arms), 
+#'	used to calculate the expected number of events
+#' @param pH1 optional alternative, numeric vector, proportion of events in the intervention arm
+#' @param rrH1 alternative specification of alternative as risk ratio (intervention / control)
+#' @param orH1 alternative specification of alternative as risk ratio (intervention / control). Requires the control proportion (r0).
+#' @param rdH1 alternative specification of alternative as risk difference (intervention - control). Requires the control proportion (r0) and the number of participants (n).
+#' @param r0 risk in the control group. Required if the alternative is given as risk difference or odds ratio.
 #'
 #' @return Test-wide alpha
 #'
@@ -16,42 +28,86 @@
 #' @importFrom stats uniroot
 #'
 #' @examples
+#'	#Control overall family-wise type I error:
 #'	apt<-getAlphaPerTest(nevents = c(10,50,100), totalAlpha = 0.05, pH0 = 0.5)
 #'	apt
 #'	getHarmBound(nevents = c(10,50,100),alpha_test = apt, pH0 = 0.5)
 #'
-#'
+#'	#Control power assuming 80% of events in expermintal arm
+#'	apt<-getAlphaPerTest(nevents = c(10,50,100), power = 0.8, pH0 = 0.5, pH1 = 0.6)
+#'	apt
+#'	getHarmBound(nevents = c(10,50,100),alpha_test = apt, pH0 = 0.5, pH1 = 0.6)
 getAlphaPerTest <- function(nevents,
-	totalAlpha=0.05,
+	totalAlpha = NULL, power = NULL,
 	pH0 = 0.5,
-	alpha.interval=c(10^(-10), 0.05)){
-
-    getCumAlpha <- function(alphaPerTest, nevents, pH0) {
-        harmBounds <- getHarmBound(
-                          nevents = nevents,
-                          alpha_test = alphaPerTest,
-                          pH0 = pH0)
-        return(harmBounds$opchar[1,"cum_stop_prob"] - totalAlpha)
+	alpha.interval = c(10^(-10), 1),
+	maxevents = NULL,
+	pH1 = NULL, 
+	rrH1 = NULL, orH1 = NULL, rdH1 = NULL,
+	r0 = NULL) {
+	
+	#either totalAlpha or power
+	nn <- sum(!is.null(totalAlpha), !is.null(power))
+	if (nn!=1) {
+		stop("Either 'totalAlpha' or 'power' must be specified.")
+	}
+	
+	#check alternative if power 
+	if (!is.null(power)) {
+		nn<-sum(!is.null(pH1) | !is.null(rdH1) | !is.null(rrH1) | !is.null(orH1))
+		if (nn!=1) {
+			stop("Exactly one of pH1, rdH1, rrH1, or rrH1 must be entered with 'power'.")
+		}
+		if (length(pH1)>1 | length(rdH1)>1 | length(rrH1)>1 | length(orH1)>1) {
+			warning("Only the first alternative is used to calibrate overall power")
+		}
+	}
+	
+    getCumAlpha <- function(alphaPerTest, nevents, pH0, ...) {
+        harmBounds <- getHarmBound1(
+			nevents = nevents,
+			alpha_test = alphaPerTest,
+			pH0 = pH0,
+			maxevents = maxevents,
+			pH1 = pH1[1], 
+			rrH1 = rrH1[1], orH1 = orH1[1], rdH1 = rdH1[1],
+			r0 = r0)
+			
+		if (!is.null(totalAlpha)) { 
+			return(harmBounds$opchar[1,"cum_stop_prob"] - totalAlpha)
+		} else {
+			return(harmBounds$opchar[2,"cum_stop_prob"] - power)
+		}		
     }
 
 	ur<-uniroot(getCumAlpha, interval = alpha.interval, tol=1e-7,
-		nevents = nevents, pH0=pH0)
-
+		nevents = nevents, pH0 = pH0,
+			maxevents = maxevents,
+			pH1 = pH1, 
+			rrH1 = rrH1, orH1 = orH1, rdH1 = rdH1,
+			r0 = r0)
+			
 	return(ur$root)
 
 }
 
 
-
 #' Harm boundaries for safety testing
 #'
 #' Calculates the boundaries at each interim analysis, i.e. the number of events in the intervention group
-#' that would lead to a stopping of the trial based on a binomial exact test,
-#' assuming that the events should be equally distributed amont both groups.
-#' The indicated scenario (and all more extreme) would lead to a rejection of H0 (equal distribution) and a stopping for safety.
+#' that would lead to a stopping of the trial based binomial exact tests,
+#' assuming that the events should be equally distributed among both groups.
+#' The indicated scenario (and all more extreme) 
+#'	would lead to a rejection of H0 (equal distribution) and a stopping for safety.
+#'
+#' The rejection region for the binomial exact tests must be given for either 
+#'		each test (alpha_test), overall (totalAlpha, the family-wise error rate) or
+#'		by the targetted power for the specified alternative.
 #'
 #' @param nevents vector with number of events (over both arms) at which an interim analysis is done
 #' @param alpha_test the nominal alpha level to use for each test
+#' @param totalAlpha target overall family-wise type I error
+#' @param power target power at the specified alternative
 #' @param pH0 proportion of events in the intervention arm under the null hypothesis,
 #'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
 #' @param maxevents optional maximum number of events expected for the trial (over both arms), used to calculate the expected number of events
@@ -60,7 +116,6 @@ getAlphaPerTest <- function(nevents,
 #' @param orH1 alternative specification of alternative as risk ratio (intervention / control). Requires the control proportion (r0).
 #' @param rdH1 alternative specification of alternative as risk difference (intervention - control). Requires the control proportion (r0) and the number of participants (n).
 #' @param r0 risk in the control group. Required if the alternative is given as risk difference or odds ratio.
-#' @param n total number of participants. Required if the alternative is given as risk difference.
 #' @return a list with 3 data.frames: bounds, stopprob and opchar.
 #' bounds has a row for each interim analysis and columns for
 #'	number of events (events),
@@ -80,29 +135,106 @@ getAlphaPerTest <- function(nevents,
 #'
 #' @export
 #'
-#' @importFrom stats dbinom
+#' @importFrom stats dbinom qbinom
 #'
 #' @examples
+#'
 #' getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5)
 #' #adding an alternative
 #' getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6)
-#' #assume that a total of 150 events might occur
+#' 
+#' #assume that a total of 150 events might occur (for the expected events)
 #' getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6, maxevents=150)
-#' #or several alternatives
+#' 
+#' #several alternatives
 #' getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5,
 #'	pH1 = seq(0.6,0.8,by=0.05), maxevents=150)
-#' #or as risk ratio
+#'
+#' #using a risk ratio to specify the alternative
 #' getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, rrH1=1.5, maxevents=150)
-
-
-getHarmBound <- function(nevents,alpha_test,pH0,
+#'
+#' # define the test so that an family-wise type I error of 5% is achieved
+#'	getHarmBound(nevents=c(10,50,100), totalAlpha=0.05, pH0=0.5)
+#'
+#' # define the test so that an over power of 80% is achieved
+#' # needs an alternative
+#'	getHarmBound(nevents=c(10,50,100), power=0.8, pH0=0.5, pH1=0.6)
+getHarmBound <- function(nevents,
+	alpha_test = NULL, totalAlpha = NULL, power = NULL,
+	pH0,
 	maxevents=NULL,
 	pH1=NULL, 
-	rrH1=NULL, orH1=NULL,rdH1=NULL,
-	r0=NULL, n=NULL){
+	rrH1=NULL, orH1=NULL, rdH1=NULL,
+	r0=NULL){
+	
+	#get alpha_test of not given:
+	nn <- sum(!is.null(alpha_test) | !is.null(totalAlpha) | !is.null(power))
+	if (nn!=1) {
+		stop("Exactly one of 'alpha_test', 'totalAlpha' or 'power' must be specified.")
+	}
+	
+	if (is.null(alpha_test)) {
+		alpha_test<-getAlphaPerTest(nevents=nevents,
+			totalAlpha = totalAlpha, power = power,
+			pH0 = pH0,
+			alpha.interval = c(10^(-10), 1),
+			maxevents = maxevents,
+			pH1 = pH1, 
+			rrH1 = rrH1, orH1 = orH1, rdH1 = rdH1, r0 = r0)
+	}
+	
+	res<-getHarmBound1(nevents = nevents,
+		alpha_test = alpha_test,
+		pH0 = pH0,
+		maxevents = maxevents,
+		pH1 = pH1, 
+		rrH1 = rrH1, orH1 = orH1, rdH1 = rdH1, r0 = r0)
+		
+	return(res)
+	
+}
+
+#' Harm boundaries for safety testing (main function)
+#'
+#' @param nevents vector with number of events (over both arms) at which an interim analysis is done
+#' @param alpha_test the nominal alpha level to use for each test
+#' @param pH0 proportion of events in the intervention arm under the null hypothesis,
+#'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
+#' @param maxevents optional maximum number of events expected for the trial (over both arms), used to calculate the expected number of events
+#' @param pH1 optional alternative, numeric vector, proportion of events in the intervention arm
+#' @param rrH1 alternative specification of alternative as risk ratio (intervention / control)
+#' @param orH1 alternative specification of alternative as risk ratio (intervention / control). Requires the control proportion (r0).
+#' @param rdH1 alternative specification of alternative as risk difference (intervention - control). Requires the control proportion (r0) and the number of participants (n).
+#' @param r0 risk in the control group. Required if the alternative is given as risk difference or odds ratio.
+#' @return a list with 3 data.frames: bounds, stopprob and opchar.
+#' bounds has a row for each interim analysis and columns for
+#'	number of events (events),
+#'	number of events in control and intervention group that would lead to a stop
+#'	(events_intervention, events_control), and the nominal alpha for each test (alpha_test).
+#'  stopprob has a row for each interim analysis and columns for
+#'	number of events (events),
+#'	the hypothesis (pH),
+#'	the stopping probability (stop_prob), and
+#'	the cumulative stopping probability (cum_stop_prob)
+#'	opchar has a row for each hypothesis (null plus each alternative) and columns 
+#'	for the assumed proportion of events in the intervention group (p),
+#'	the cumulative stopping probabilities (cum_stop_prob) and 
+#'	the expected total number of events (expected_events)
+#'	for the null and each alternative.
+#'
+#'
+#' @importFrom stats dbinom
+#'
+#' @noRd
+#'
+getHarmBound1 <- function(nevents, alpha_test, pH0,
+	maxevents=NULL,
+	pH1=NULL, 
+	rrH1=NULL, orH1=NULL, rdH1=NULL,
+	r0=NULL){
 
 	#check alternative
-	nn<-sum(!is.null(pH1) | is.null(rdH1) | is.null(rrH1) | is.null(orH1))
+	nn<-sum(!is.null(pH1) | !is.null(rdH1) | !is.null(rrH1) | !is.null(orH1))
 	if (nn>1) {
 		stop("Only one of pH1, rdH1, rrH1, or rrH1 should be entered.")
 	}
@@ -117,44 +249,18 @@ getHarmBound <- function(nevents,alpha_test,pH0,
 	}
 	
 	if (!is.null(rdH1) | !is.null(rrH1) | !is.null(orH1)) {
-
+		
 		if (!is.null(rrH1)) {
-			#for risk ratio, pH1 does not depend on r0 or n:
-			pH1<-rrH1*pH0/(1-pH0)/(1+rrH1*pH0/(1-pH0))
-			#cri<-convertRisks(rr=rrH1, r0=0.5, n0=(1-pH0), n1=pH0)
-			#stopifnot(abs(pH1 - cri["eprop"])<10^(-10))
-		}
-		if (!is.null(orH1)) {
-			#for odds, pH1 depends on r0
+			r0<-0.5
+		} else {
 			if (is.null(r0)) {
-				stop("r0 has to be given if the effect is given as odds ratio (orH1).")
+				stop("r0 has to be given if the effect is given as 'orH1' or 'rdH1'.")
 			}
-			if (length(orH1)!=length(r0)) {
-				stop("Length of orH1 and r0 have to be the same")
-			}
-			rr<-orH1/(1-r0+orH1*r0)
-			pH1<-rr*pH0/(1-pH0)/(1+rr*pH0/(1-pH0))
-			#cri<-convertRisks(or=orH1, r0=r0, n0=(1-pH0), n1=pH0)
-			#pH1 <- cri["eprop"]
 		}
-
-		if (!is.null(rdH1)) {
-			#for risk difference, pH1 depends on r0 and n
-			if (is.null(n)) {
-				stop("n has to be given if the effect is given as risk difference (rdH1).")
-			}
-			if (is.null(r0)) {
-				stop("r0 has to be given if the effect is given as risk difference (rdH1).")
-			}
-			n0 <- (1-pH0)*n
-			n1 <- pH0*n
-			r1<-rdH1 + r0
-			pH1<-r1*n1/(r0*n0 + r1*n1)
-			#cri<-convertRisks(rd=rdH1, r0=r0, n0=n0, n1=n1)
-			#pH1 <- cri["eprop"]
-		}
+		pH1<-convertRisks(rd=rdH1, rr=rrH1, or=orH1, r0=r0, n0=(1-pH0), n1=pH0)[,"eprop"]
+		pH1<-as.numeric(pH1)
 	}
-
+	
 	# create data frame to store results in
 	bounds <- data.frame(totevents=1:max(nevents), treatBound=NA,
 		alphaLevelBound=NA, cutoff=NA)
@@ -255,21 +361,20 @@ getHarmBound <- function(nevents,alpha_test,pH0,
 		
 		#summary
 		if (!is.null(rrH1)) {
-			outc<-cbind(outc,rr=c(1,rrH1)[i])
-			outc<-outc |> dplyr::relocate(rr, .after = .data$p)
+			outc<-cbind(outc, rr=c(1,rrH1)[i])
+			outc<-outc |> dplyr::relocate(.data$rr, .after = .data$p)
 		}
 		if (!is.null(orH1)) {
-			outc<-cbind(outc,or=c(1,orH1)[i],r0 = .data$r0)
+			outc<-cbind(outc,or=c(1,orH1)[i],r0 = r0)
 			outc<-outc |> 
 				dplyr::relocate(.data$or, .after = .data$p) |>
 				dplyr::relocate(.data$r0, .after = .data$or)
 		}
 		if (!is.null(rdH1)) {
-			outc<-cbind(outc,rd=c(1,rdH1)[i],r0=r0,n=n)
+			outc<-cbind(outc,rd=c(1,rdH1)[i],r0=r0)
 			outc<-outc |> 
 				dplyr::relocate(.data$rd, .after = .data$p) |>
-				dplyr::relocate(.data$r0, .after = .data$rd) |>
-				dplyr::relocate(.data$n, .after = .data$r0)
+				dplyr::relocate(.data$r0, .after = .data$rd)
 		}
 			
 		cumstop<-rbind(cumstop,outc)
@@ -288,7 +393,7 @@ getHarmBound <- function(nevents,alpha_test,pH0,
 
 
 
-#' Title
+#' pNS
 #' Helper function which creates an object containing the values of the function P(n,s)
 #' defined by Breslow (1970, JASA) as, for 0 <= s <= n <= N,  the probability
 #' of the binomial random walk S_n reaching S_n = s without "absorption" into
@@ -467,8 +572,8 @@ convertRisks<-function(eprop=NULL,etotal=NULL,
 		or<-r1/(1-r1)/(r0/(1-r0))
 		etotal<-r1*n1/eprop
 	}
-
-	res<-c(eprop,etotal,n0,n1,r0,r1,rd,rr,or)
-	names(res)<-c("eprop","etotal","n0","n1","r0","r1","rd","rr","or")
+	
+	res<-cbind(eprop,etotal,n0,n1,r0,r1,rd,rr,or)
+	colnames(res)<-c("eprop","etotal","n0","n1","r0","r1","rd","rr","or")
 	return(res)
 }

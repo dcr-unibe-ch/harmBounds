@@ -2,35 +2,63 @@
 % Please edit documentation in R/harmBound_functions.R
 \name{getAlphaPerTest}
 \alias{getAlphaPerTest}
-\title{Test-wise alpha necessary to control the overall type I error at a specified level (0.05 by default)}
+\title{Test-wise alpha necessary to control either
+the family-wise type I error or the power at a specified level}
 \usage{
 getAlphaPerTest(
   nevents,
-  totalAlpha = 0.05,
+  totalAlpha = NULL,
+  power = NULL,
   pH0 = 0.5,
-  alpha.interval = c(10^(-10), 0.05)
+  alpha.interval = c(10^(-10), 1),
+  maxevents = NULL,
+  pH1 = NULL,
+  rrH1 = NULL,
+  orH1 = NULL,
+  rdH1 = NULL,
+  r0 = NULL
 )
 }
 \arguments{
 \item{nevents}{vector with number of events at which an interim analysis is done}
 
-\item{totalAlpha}{Overall type I error, 0.05 by default}
+\item{totalAlpha}{target overall family-wise type I error}
+
+\item{power}{target power at the specified alternative}
 
 \item{pH0}{proportion of events in the intervention arm under the null hypothesis,
 typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 
 \item{alpha.interval}{Range for test-wise alpha, c(10^(-10),0.05) by default}
+
+\item{maxevents}{optional maximum number of events expected for the trial (over both arms),
+used to calculate the expected number of events}
+
+\item{pH1}{optional alternative, numeric vector, proportion of events in the intervention arm}
+
+\item{rrH1}{alternative specification of alternative as risk ratio (intervention / control)}
+
+\item{orH1}{alternative specification of alternative as risk ratio (intervention / control). Requires the control proportion (r0).}
+
+\item{rdH1}{alternative specification of alternative as risk difference (intervention - control). Requires the control proportion (r0) and the number of participants (n).}
+
+\item{r0}{risk in the control group. Required if the alternative is given as risk difference or odds ratio.}
 }
 \value{
 Test-wide alpha
 }
 \description{
-Test-wise alpha necessary to control the overall type I error at a specified level (0.05 by default)
+Exactly one of totalAlpha or power have to be specified.
+The power requires the specification of an alternative via one of pH1, rrH1, orH1 or rdH1.
 }
 \examples{
+#Control overall family-wise type I error:
 apt<-getAlphaPerTest(nevents = c(10,50,100), totalAlpha = 0.05, pH0 = 0.5)
 apt
 getHarmBound(nevents = c(10,50,100),alpha_test = apt, pH0 = 0.5)
 
-
+#Control power assuming 80\% of events in expermintal arm
+apt<-getAlphaPerTest(nevents = c(10,50,100), power = 0.8, pH0 = 0.5, pH1 = 0.6)
+apt
+getHarmBound(nevents = c(10,50,100),alpha_test = apt, pH0 = 0.5, pH1 = 0.6)
 }
