@@ -30,8 +30,6 @@ plot(hb)
 
 ![](reference/figures/README-unnamed-chunk-4-1.png)
 
-### Operating characteristics
-
 Stopping probabilities and expected number of events can be obtained for
 alternative scenarios.
 

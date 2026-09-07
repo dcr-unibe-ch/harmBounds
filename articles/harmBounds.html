@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">harmBounds</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,7 +67,7 @@ event based approach.</p>
 <p>The idea is that under the null hypothesis of no safety concern,
 safety events are expected to occur at a frequency proportional to the
 randomization ratio. We can therefore do one sample binomial exact tests
-on the proportion of events in the intervention arm. Evidence that this
+on the proportion of events in the treatment arm. Evidence that this
 proportion higher than what would be expected from randomization would
 indicate a safety problem.</p>
 <p>The safety monitoring can be done continuously after every event or
@@ -77,8 +77,8 @@ proportion of stopping under alternative scenarios of some degree of
 safety problems (the power). An overall Type I error control can also be
 implemented but we would usually not recommend that for safety testing,
 as the consequence of a Type II error (not stopping for safety if the
-intervention is not safe) is arguably worse than of a Type I error
-(stopping if the intervention is safe).</p>
+treatment is not safe) is arguably worse than of a Type I error
+(stopping if the treatment is safe).</p>
 <p>The procedure is computationally efficient and fully reproducible, as
 all calculations are exact and derived in closed form from the binomial
 distribution. And it is not limited to a single event per participant or
@@ -88,23 +88,23 @@ to a specific type of event.</p>
 </h2>
 <p>Stopping boundaries can be calculated with function
 <code>getHarmBound</code>. Let’s assume a trial with 10 safety interim
-analyses after every 10 events (combined over both groups) up to a total
+analyses after every 10 events (combined over both arms) up to a total
 of 100 events and a nominal test-wise alpha of 0.025.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hb</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/getHarmBound.html">getHarmBound</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, alpha_test <span class="op">=</span> <span class="fl">0.025</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="va">hb</span></span>
 <span><span class="co">#&gt; $bounds</span></span>
-<span><span class="co">#&gt;    events events_intervention events_control alpha_test</span></span>
-<span><span class="co">#&gt; 1      10                   9              1      0.025</span></span>
-<span><span class="co">#&gt; 2      20                  15              5      0.025</span></span>
-<span><span class="co">#&gt; 3      30                  21              9      0.025</span></span>
-<span><span class="co">#&gt; 4      40                  27             13      0.025</span></span>
-<span><span class="co">#&gt; 5      50                  33             17      0.025</span></span>
-<span><span class="co">#&gt; 6      60                  39             21      0.025</span></span>
-<span><span class="co">#&gt; 7      70                  44             26      0.025</span></span>
-<span><span class="co">#&gt; 8      80                  50             30      0.025</span></span>
-<span><span class="co">#&gt; 9      90                  55             35      0.025</span></span>
-<span><span class="co">#&gt; 10    100                  61             39      0.025</span></span>
+<span><span class="co">#&gt;    events events_treatment events_control alpha_test</span></span>
+<span><span class="co">#&gt; 1      10                9              1      0.025</span></span>
+<span><span class="co">#&gt; 2      20               15              5      0.025</span></span>
+<span><span class="co">#&gt; 3      30               21              9      0.025</span></span>
+<span><span class="co">#&gt; 4      40               27             13      0.025</span></span>
+<span><span class="co">#&gt; 5      50               33             17      0.025</span></span>
+<span><span class="co">#&gt; 6      60               39             21      0.025</span></span>
+<span><span class="co">#&gt; 7      70               44             26      0.025</span></span>
+<span><span class="co">#&gt; 8      80               50             30      0.025</span></span>
+<span><span class="co">#&gt; 9      90               55             35      0.025</span></span>
+<span><span class="co">#&gt; 10    100               61             39      0.025</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stopprob</span></span>
 <span><span class="co">#&gt; $stopprob$`0.5`</span></span>
@@ -128,9 +128,9 @@ of 100 events and a nominal test-wise alpha of 0.025.</p>
 <span><span class="co">#&gt; attr(,"class")</span></span>
 <span><span class="co">#&gt; [1] "harmbound" "list"</span></span></code></pre></div>
 <p>The data frame <em>bounds</em> specifies the boundaries at each
-interim analysis, <em>events_intervention</em> is the minimal number of
-events in the intervention group that would lead to a stopping of the
-trial. The list <em>stopprob</em> contains stopping probability at each
+interim analysis, <em>events_treatment</em> is the minimal number of
+events in the treatment arm that would lead to a stopping of the trial.
+The list <em>stopprob</em> contains stopping probability at each
 analysis for the null and optionally alternative hypotheses (see below).
 Data frame <em>opchar</em> shows the cumulative stopping probability and
 the expected number of events for each hypothesis.</p>
@@ -151,39 +151,39 @@ The option only influences the expected events.</p>
 <h2 id="alternative-specification-of-rejection-criteria">Alternative specification of rejection criteria<a class="anchor" aria-label="anchor" href="#alternative-specification-of-rejection-criteria"></a>
 </h2>
 <p>Instead of using an alpha for each test, we can also control the
-overall family-wise type I error rate at a specific level (even though
-we do not necessarily recommend that). Refer to <a href="#sec-alpha">Choosing the test-wise alpha</a> for more details.</p>
+family-wise type I error rate at a specific level (even though we do not
+necessarily recommend that). Refer to <a href="#sec-alpha">Choosing the
+test-wise alpha</a> for more details.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hb</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/getHarmBound.html">getHarmBound</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, totalAlpha <span class="op">=</span> <span class="fl">0.05</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">hb</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/getHarmBound.html">getHarmBound</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, alpha_total <span class="op">=</span> <span class="fl">0.05</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span><span class="va">hb</span><span class="op">$</span><span class="va">opchar</span></span>
 <span><span class="co">#&gt;     p cum_stop_prob expected_events hyp</span></span>
 <span><span class="co">#&gt; 1 0.5    0.05104241        97.33673  H0</span></span></code></pre></div>
 <p>The overall stopping probability under H0 (the type I error) is 5.1%,
 i.e. as close to 5% as possible (given the discrete nature of the
-test).If a strict control at 5% would required a <em>totalAlpha</em> of
+test).If a strict control at 5% would required a <em>alpha_total</em> of
 0.049 would have to be chosen.</p>
 <p>Another more sensible option would be to target the type II error (or
 the power) for a specific alternative. This option requires the
 specification of an alternative, e.g. assuming that 60% of the events
-occuring in the experimental group would indicate a safety problem (see
-<a href="#sec-opchar">Operating characteristics</a> for more details
-about the alternatives).</p>
+occuring in the experimental arm would indicate a safety problem (see <a href="#sec-opchar">Operating characteristics</a> for more details about
+the alternatives).</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">hb</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/getHarmBound.html">getHarmBound</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  power <span class="op">=</span> <span class="fl">0.8</span>, pH1 <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">hb</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/getHarmBound.html">getHarmBound</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, power <span class="op">=</span> <span class="fl">0.8</span>, </span>
+<span>  pH0 <span class="op">=</span> <span class="fl">0.5</span>, pH1 <span class="op">=</span> <span class="fl">0.6</span><span class="op">)</span></span>
 <span><span class="va">hb</span><span class="op">$</span><span class="va">opchar</span></span>
 <span><span class="co">#&gt;     p cum_stop_prob expected_events hyp</span></span>
 <span><span class="co">#&gt; 1 0.5     0.1980100        87.63776  H0</span></span>
 <span><span class="co">#&gt; 2 0.6     0.8018467        52.56440  H1</span></span></code></pre></div>
-<p>Specifiying <em>totalAlpha</em> or <em>power</em> is much slower as
+<p>Specifying <em>alpha_total</em> or <em>power</em> is much slower as
 it relies on an iterative procedure ro determine the alpha used at each
-step. It could make sense to first determine the alpha per test and then
-use it directly in <code>getHarmBound</code>.</p>
+step. It could make sense to first determine the <em>alpha_test</em> and
+then use it directly in <code>getHarmBound</code>.</p>
 <p>This can be done separately using function
-<em>getAlphaPerTest</em>:</p>
+<code>getAlphaPerTest</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">alphaPerTest</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/getAlphaPerTest.html">getAlphaPerTest</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, </span>
-<span>  totalAlpha <span class="op">=</span> <span class="fl">0.05</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
+<span>  alpha_total <span class="op">=</span> <span class="fl">0.05</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">alphaPerTest</span></span>
 <span><span class="co">#&gt; [1] 0.01760014</span></span>
@@ -197,8 +197,8 @@ use it directly in <code>getHarmBound</code>.</p>
 <div class="section level2">
 <h2 id="plotting-of-the-boundaries">Plotting of the boundaries<a class="anchor" aria-label="anchor" href="#plotting-of-the-boundaries"></a>
 </h2>
-<p>The boundaries can be plotted using <em>harmboundPlot</em> (or the
-harmbound.plot-method):</p>
+<p>The boundaries can be plotted using <code>harmboundPlot</code> (or
+the harmbound.plot-method):</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">hb</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/getHarmBound.html">getHarmBound</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, alpha_test <span class="op">=</span> <span class="fl">0.025</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  maxevents <span class="op">=</span> <span class="fl">150</span><span class="op">)</span></span>
@@ -214,9 +214,8 @@ expectation (can be removed with ‘H0line = FALSE’)</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">hb</span><span class="op">)</span> </span></code></pre></div>
 <p><img src="harmBounds_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="700"></p>
 <p>Observed data can be added as vector with 0 and 1, indicated the
-sequence of the groups in which events occurred (0 being the control and
-1 the intervention group). In this example, the boundary is not
-breached.</p>
+sequence of the arms in which events occurred (0 being the control and 1
+the treatment arm). In this example, the boundary is not breached.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span>
 <span><span class="va">eventgroups</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/stats/Binomial.html" class="external-link">rbinom</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">100</span>, size <span class="op">=</span> <span class="fl">1</span>, prob <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span></span>
@@ -230,38 +229,38 @@ breached.</p>
 for alternative scenarios with the <code>getHarmBound</code> function.
 The alternative hypothesis can be specified as</p>
 <ul>
-<li><p>pH1: the proportion of the events in the intervention group, with
-0.5 being the null scenario for a 1:1 rando, and numbers from 0.5 to 1
+<li><p>pH1: the proportion of the events in the treatment arm, with 0.5
+being the null scenario for a 1:1 rando, and numbers from 0.5 to 1
 indicating a safety problem.</p></li>
-<li><p>rrH1: the risk ratio (intervention / control), with 1 being the
-null scenario and numbers &gt;1 indicating a safety problem.</p></li>
-<li><p>rdH1: the risk difference (intervention minus control), with 0
-being the null scenario and numbers &gt;0 indicating a safety problem.
-Here the control proportion (r0) and the total number of participants
-(n) have to be specified.</p></li>
-<li><p>orH1: the odds ratio (intervention / control), with 1 being the
-null scenario and number &gt;1 indicating a safety problem. Here the
-control proportion (r0) has to be specified.</p></li>
+<li><p>rrH1: the risk ratio (treatment / control), with 1 being the null
+scenario and numbers &gt;1 indicating a safety problem.</p></li>
+<li><p>rdH1: the risk difference (treatment minus control), with 0 being
+the null scenario and numbers &gt;0 indicating a safety problem. Here
+the control proportion (r0) and the total number of participants (n)
+have to be specified.</p></li>
+<li><p>orH1: the odds ratio (treatment / control), with 1 being the null
+scenario and number &gt;1 indicating a safety problem. Here the control
+proportion (r0) has to be specified.</p></li>
 </ul>
 <p>To stay in the event-based setting, we recommend using the first two
 options (pH1 or rrH1).</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">#with proportion of events in the intervention group:</span></span>
+<code class="sourceCode R"><span><span class="co">#with proportion of events in the treatment arm:</span></span>
 <span><span class="va">hb</span><span class="op">&lt;-</span><span class="fu"><a href="../reference/getHarmBound.html">getHarmBound</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, alpha_test <span class="op">=</span> <span class="fl">0.025</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  pH1 <span class="op">=</span> <span class="fl">0.6</span>, maxevents <span class="op">=</span> <span class="fl">150</span><span class="op">)</span></span>
 <span><span class="va">hb</span></span>
 <span><span class="co">#&gt; $bounds</span></span>
-<span><span class="co">#&gt;    events events_intervention events_control alpha_test</span></span>
-<span><span class="co">#&gt; 1      10                   9              1      0.025</span></span>
-<span><span class="co">#&gt; 2      20                  15              5      0.025</span></span>
-<span><span class="co">#&gt; 3      30                  21              9      0.025</span></span>
-<span><span class="co">#&gt; 4      40                  27             13      0.025</span></span>
-<span><span class="co">#&gt; 5      50                  33             17      0.025</span></span>
-<span><span class="co">#&gt; 6      60                  39             21      0.025</span></span>
-<span><span class="co">#&gt; 7      70                  44             26      0.025</span></span>
-<span><span class="co">#&gt; 8      80                  50             30      0.025</span></span>
-<span><span class="co">#&gt; 9      90                  55             35      0.025</span></span>
-<span><span class="co">#&gt; 10    100                  61             39      0.025</span></span>
+<span><span class="co">#&gt;    events events_treatment events_control alpha_test</span></span>
+<span><span class="co">#&gt; 1      10                9              1      0.025</span></span>
+<span><span class="co">#&gt; 2      20               15              5      0.025</span></span>
+<span><span class="co">#&gt; 3      30               21              9      0.025</span></span>
+<span><span class="co">#&gt; 4      40               27             13      0.025</span></span>
+<span><span class="co">#&gt; 5      50               33             17      0.025</span></span>
+<span><span class="co">#&gt; 6      60               39             21      0.025</span></span>
+<span><span class="co">#&gt; 7      70               44             26      0.025</span></span>
+<span><span class="co">#&gt; 8      80               50             30      0.025</span></span>
+<span><span class="co">#&gt; 9      90               55             35      0.025</span></span>
+<span><span class="co">#&gt; 10    100               61             39      0.025</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stopprob</span></span>
 <span><span class="co">#&gt; $stopprob$`0.5`</span></span>
@@ -302,9 +301,9 @@ options (pH1 or rrH1).</p>
 for each condition.</p>
 <p>We would stop in 7.2% of the trials under the null (no safety
 problem) and in 59.2% under the alternative (safety problem with 60% of
-the events in the intervention group). Because of the higher probability
-of early stopping, the expected number of events is reduced from 142
-under H0 to 91 under H1.</p>
+the events in the treatment arm). Because of the higher probability of
+early stopping, the expected number of events is reduced from 142 under
+H0 to 91 under H1.</p>
 <p>The (cumulative) stopping probabilities at each step can be plotted
 using <em>absstopPlot</em> or <em>cumstopPlot</em> (or the
 harmbound.plot-methods). We now using more than one alternative to make
@@ -342,7 +341,7 @@ of trials are stopped under an appropriate alternative hypothesis
 probabilities for a grid of alphas:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">alphaPerTest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getAlphaPerTest.html">getAlphaPerTest</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  totalAlpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
+<span>  alpha_total <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
 <span><span class="va">alist</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.001</span>,<span class="fl">0.01</span>,<span class="va">alphaPerTest</span>,<span class="fl">0.025</span>,<span class="fl">0.05</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">hbl</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">alist</span>,<span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
@@ -355,7 +354,7 @@ probabilities for a grid of alphas:</p>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">hbd</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">p</span>, y <span class="op">=</span> <span class="va">cum_stop_prob</span>, colour<span class="op">=</span><span class="va">alpha</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ylab</span><span class="op">(</span><span class="st">"Stopping probability"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">xlab</span><span class="op">(</span><span class="st">"Proportion of events in intervention group"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">xlab</span><span class="op">(</span><span class="st">"Proportion of events in treatment arm"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_x_continuous</span><span class="op">(</span>breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,by<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span>,limits<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>,<span class="fl">0.8</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_y_continuous</span><span class="op">(</span>breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,by<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="harmBounds_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="700"></p>
@@ -364,14 +363,14 @@ probabilities for a grid of alphas:</p>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">hbd</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">p</span>, y <span class="op">=</span> <span class="va">expected_events</span>, colour<span class="op">=</span><span class="va">alpha</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ylab</span><span class="op">(</span><span class="st">"Expected number of events"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">xlab</span><span class="op">(</span><span class="st">"Proportion of events in intervention group"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">xlab</span><span class="op">(</span><span class="st">"Proportion of events in treatment arm"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_x_continuous</span><span class="op">(</span>breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,by<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span>,limits<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>,<span class="fl">0.8</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_y_continuous</span><span class="op">(</span>limits<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">150</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <p><img src="harmBounds_files/figure-html/unnamed-chunk-14-2.png" class="r-plt" alt="" width="700"></p>
 <p>or on the transformed risk ratio scale:</p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">alphaPerTest</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/getAlphaPerTest.html">getAlphaPerTest</a></span><span class="op">(</span>nevents <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">100</span>, by <span class="op">=</span> <span class="fl">10</span><span class="op">)</span>, pH0 <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  totalAlpha <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
+<span>  alpha_total <span class="op">=</span> <span class="fl">0.05</span><span class="op">)</span></span>
 <span><span class="va">alist</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.001</span>,<span class="fl">0.01</span>,<span class="va">alphaPerTest</span>,<span class="fl">0.025</span>,<span class="fl">0.05</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">hbl</span><span class="op">&lt;-</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">alist</span>,<span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
@@ -385,7 +384,7 @@ probabilities for a grid of alphas:</p>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">hbd</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">rr</span>, y <span class="op">=</span> <span class="va">cum_stop_prob</span>, colour<span class="op">=</span><span class="va">alpha</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ylab</span><span class="op">(</span><span class="st">"Stopping probability"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">xlab</span><span class="op">(</span><span class="st">"Risk ratio (intervention/control)"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">xlab</span><span class="op">(</span><span class="st">"Risk ratio (treatment/control)"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_x_continuous</span><span class="op">(</span>trans<span class="op">=</span><span class="st">'log'</span>, breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">0.75</span>,<span class="fl">1</span>,<span class="fl">1.5</span>,<span class="fl">2</span>,<span class="fl">3</span>,<span class="fl">4</span><span class="op">)</span>,</span>
 <span>      minor_breaks<span class="op">=</span><span class="cn">NULL</span>,limits<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.5</span>,<span class="fl">5</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_y_continuous</span><span class="op">(</span>breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,by<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
@@ -429,7 +428,7 @@ interim analysis is at the same time point.</p>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">hbd</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">p</span>, y <span class="op">=</span> <span class="va">cum_stop_prob</span>, colour<span class="op">=</span><span class="va">ni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ylab</span><span class="op">(</span><span class="st">"Stopping probability"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">xlab</span><span class="op">(</span><span class="st">"Proportion of events in intervention group"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">xlab</span><span class="op">(</span><span class="st">"Proportion of events in treatment arm"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_x_continuous</span><span class="op">(</span>breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,by<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span>,limits<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>,<span class="fl">0.8</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_y_continuous</span><span class="op">(</span>breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,by<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">labs</span><span class="op">(</span>colour<span class="op">=</span><span class="st">"Number of IAs"</span><span class="op">)</span></span></code></pre></div>
@@ -451,7 +450,7 @@ curves), we would need a higher total number of events:</p>
 <span><span class="fu">ggplot</span><span class="op">(</span><span class="va">hbd</span>, <span class="fu">aes</span><span class="op">(</span>x <span class="op">=</span> <span class="va">p</span>, y <span class="op">=</span> <span class="va">cum_stop_prob</span>, colour<span class="op">=</span><span class="va">ni</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> </span>
 <span>    <span class="fu">geom_line</span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ylab</span><span class="op">(</span><span class="st">"Stopping probability"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>     <span class="fu">xlab</span><span class="op">(</span><span class="st">"Proportion of events in intervention group"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>     <span class="fu">xlab</span><span class="op">(</span><span class="st">"Proportion of events in treatment arm"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_x_continuous</span><span class="op">(</span>breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,by<span class="op">=</span><span class="fl">0.1</span><span class="op">)</span>,limits<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.2</span>,<span class="fl">0.8</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">scale_y_continuous</span><span class="op">(</span>breaks<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>,<span class="fl">1</span>,by<span class="op">=</span><span class="fl">0.2</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">labs</span><span class="op">(</span>colour<span class="op">=</span><span class="st">"Total number of events"</span><span class="op">)</span></span></code></pre></div>

@@ -57,7 +57,7 @@ simSafetyStop(
 
 - r0:
 
-  risk in the control group. Required if the effect is given as risk
+  risk in the control arm. Required if the effect is given as risk
   difference or odds ratio.
 
 - n:

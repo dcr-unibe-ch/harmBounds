@@ -1,6 +1,6 @@
-# Convert the proportion of events in the intervention groups to risk differences and ratios (and vice versa)
+# Convert the proportion of events in the treatment arms to risk differences and ratios (and vice versa)
 
-Convert the proportion of events in the intervention groups to risk
+Convert the proportion of events in the treatment arms to risk
 differences and ratios (and vice versa)
 
 ## Usage
@@ -22,7 +22,7 @@ convertRisks(
 
 - eprop:
 
-  proportion of events in intervention group
+  proportion of events in treatment arm
 
 - etotal:
 
@@ -42,19 +42,19 @@ convertRisks(
 
 - r0:
 
-  risk in the control group
+  risk in the control arm
 
 - n0:
 
-  number of patients in the control group
+  number of patients in the control arm
 
 - n1:
 
-  number of patients in the intervention group
+  number of patients in the treatment arm
 
 ## Value
 
-vector with risks in control and intervention group (r0, r1), the risk
+vector with risks in control and treatment arm (r0, r1), the risk
 difference (rd), risk ratio (rr) and odds ratio (or)
 
 ## Examples

@@ -1,5 +1,11 @@
 # Changelog
 
+## harmBounds 1.2.0
+
+rename option totalAlpha to alpha_total use arm instead of group add
+legend to harmboundPlot rename events_intervention to events_treatment
+in harmBound list
+
 ## harmBounds 1.1.0
 
 allow setting of totalAlpha or power in getHarmBound adapt

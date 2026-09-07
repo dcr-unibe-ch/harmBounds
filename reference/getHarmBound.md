@@ -1,10 +1,10 @@
 # Harm boundaries for safety testing
 
 Calculates the boundaries at each interim analysis, i.e. the number of
-events in the intervention group that would lead to a stopping of the
-trial based binomial exact tests, assuming that the events should be
-equally distributed among both groups. The indicated scenario (and all
-more extreme) would lead to a rejection of H0 (equal distribution) and a
+events in the treatment arm that would lead to a stopping of the trial
+based binomial exact tests, assuming that the events should be equally
+distributed among both arms. The indicated scenario (and all more
+extreme) would lead to a rejection of H0 (equal distribution) and a
 stopping for safety.
 
 ## Usage
@@ -13,7 +13,7 @@ stopping for safety.
 getHarmBound(
   nevents,
   alpha_test = NULL,
-  totalAlpha = NULL,
+  alpha_total = NULL,
   power = NULL,
   pH0,
   maxevents = NULL,
@@ -36,7 +36,7 @@ getHarmBound(
 
   the nominal alpha level to use for each test
 
-- totalAlpha:
+- alpha_total:
 
   target overall family-wise type I error
 
@@ -46,8 +46,8 @@ getHarmBound(
 
 - pH0:
 
-  proportion of events in the intervention arm under the null
-  hypothesis, typically based on randomization ratio (e.g. 0.5 for a 1:1
+  proportion of events in the treatment arm under the null hypothesis,
+  typically based on randomization ratio (e.g. 0.5 for a 1:1
   randomization)
 
 - maxevents:
@@ -58,49 +58,54 @@ getHarmBound(
 - pH1:
 
   optional alternative, numeric vector, proportion of events in the
-  intervention arm
+  treatment arm
 
 - rrH1:
 
-  alternative specification of alternative as risk ratio (intervention /
+  alternative specification of alternative as risk ratio (treatment /
   control)
 
 - orH1:
 
-  alternative specification of alternative as risk ratio (intervention /
+  alternative specification of alternative as risk ratio (treatment /
   control). Requires the control proportion (r0).
 
 - rdH1:
 
   alternative specification of alternative as risk difference
-  (intervention - control). Requires the control proportion (r0) and the
+  (treatment - control). Requires the control proportion (r0) and the
   number of participants (n).
 
 - r0:
 
-  risk in the control group. Required if the alternative is given as
-  risk difference or odds ratio.
+  risk in the control arm. Required if the alternative is given as risk
+  difference or odds ratio.
 
 ## Value
 
 a list with 3 data.frames: bounds, stopprob and opchar. bounds has a row
 for each interim analysis and columns for number of events (events),
-number of events in control and intervention group that would lead to a
-stop (events_intervention, events_control), and the nominal alpha for
-each test (alpha_test). stopprob has a row for each interim analysis and
-columns for number of events (events), the hypothesis (pH), the stopping
+number of events in control and treatment arm that would lead to a stop
+(events_treatment, events_control), and the nominal alpha for each test
+(alpha_test). stopprob has a row for each interim analysis and columns
+for number of events (events), the hypothesis (pH), the stopping
 probability (stop_prob), and the cumulative stopping probability
 (cum_stop_prob) opchar has a row for each hypothesis (null plus each
 alternative) and columns for the assumed proportion of events in the
-intervention group (p), the cumulative stopping probabilities
-(cum_stop_prob) and the expected total number of events
-(expected_events) for the null and each alternative.
+treatment arm (p), the cumulative stopping probabilities (cum_stop_prob)
+and the expected total number of events (expected_events) for the null
+and each alternative.
 
 ## Details
 
 The rejection region for the binomial exact tests must be given for
-either each test (alpha_test), overall (totalAlpha, the family-wise
+either each test (alpha_test), overall (alpha_total, the family-wise
 error rate) or by the targetted power for the specified alternative.
+
+## See also
+
+Available plot methods:
+[`plot.harmbound`](https://dcr-unibe-ch.github.io/harmBounds/reference/plot.harmbound.md)
 
 ## Examples
 
@@ -108,10 +113,10 @@ error rate) or by the targetted power for the specified alternative.
 
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5)
 #> $bounds
-#>   events events_intervention events_control alpha_test
-#> 1     10                   9              1      0.025
-#> 2     50                  33             17      0.025
-#> 3    100                  61             39      0.025
+#>   events events_treatment events_control alpha_test
+#> 1     10                9              1      0.025
+#> 2     50               33             17      0.025
+#> 3    100               61             39      0.025
 #> 
 #> $stopprob
 #> $stopprob$`0.5`
@@ -130,10 +135,10 @@ getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5)
 #adding an alternative
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6)
 #> $bounds
-#>   events events_intervention events_control alpha_test
-#> 1     10                   9              1      0.025
-#> 2     50                  33             17      0.025
-#> 3    100                  61             39      0.025
+#>   events events_treatment events_control alpha_test
+#> 1     10                9              1      0.025
+#> 2     50               33             17      0.025
+#> 3    100               61             39      0.025
 #> 
 #> $stopprob
 #> $stopprob$`0.5`
@@ -160,10 +165,10 @@ getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6)
 #assume that a total of 150 events might occur (for the expected events)
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6, maxevents=150)
 #> $bounds
-#>   events events_intervention events_control alpha_test
-#> 1     10                   9              1      0.025
-#> 2     50                  33             17      0.025
-#> 3    100                  61             39      0.025
+#>   events events_treatment events_control alpha_test
+#> 1     10                9              1      0.025
+#> 2     50               33             17      0.025
+#> 3    100               61             39      0.025
 #> 
 #> $stopprob
 #> $stopprob$`0.5`
@@ -191,10 +196,10 @@ getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, pH1=0.6, maxevents
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5,
 pH1 = seq(0.6,0.8,by=0.05), maxevents=150)
 #> $bounds
-#>   events events_intervention events_control alpha_test
-#> 1     10                   9              1      0.025
-#> 2     50                  33             17      0.025
-#> 3    100                  61             39      0.025
+#>   events events_treatment events_control alpha_test
+#> 1     10                9              1      0.025
+#> 2     50               33             17      0.025
+#> 3    100               61             39      0.025
 #> 
 #> $stopprob
 #> $stopprob$`0.5`
@@ -249,10 +254,10 @@ pH1 = seq(0.6,0.8,by=0.05), maxevents=150)
 #using a risk ratio to specify the alternative
 getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, rrH1=1.5, maxevents=150)
 #> $bounds
-#>   events events_intervention events_control alpha_test
-#> 1     10                   9              1      0.025
-#> 2     50                  33             17      0.025
-#> 3    100                  61             39      0.025
+#>   events events_treatment events_control alpha_test
+#> 1     10                9              1      0.025
+#> 2     50               33             17      0.025
+#> 3    100               61             39      0.025
 #> 
 #> $stopprob
 #> $stopprob$`0.5`
@@ -277,12 +282,12 @@ getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, rrH1=1.5, maxevent
 #> [1] "harmbound" "list"     
 
 # define the test so that an family-wise type I error of 5% is achieved
-getHarmBound(nevents=c(10,50,100), totalAlpha=0.05, pH0=0.5)
+getHarmBound(nevents=c(10,50,100), alpha_total=0.05, pH0=0.5)
 #> $bounds
-#>   events events_intervention events_control alpha_test
-#> 1     10                   9              1 0.03245429
-#> 2     50                  33             17 0.03245429
-#> 3    100                  60             40 0.03245429
+#>   events events_treatment events_control alpha_test
+#> 1     10                9              1 0.03245429
+#> 2     50               33             17 0.03245429
+#> 3    100               60             40 0.03245429
 #> 
 #> $stopprob
 #> $stopprob$`0.5`
@@ -303,10 +308,10 @@ getHarmBound(nevents=c(10,50,100), totalAlpha=0.05, pH0=0.5)
 # needs an alternative
 getHarmBound(nevents=c(10,50,100), power=0.8, pH0=0.5, pH1=0.6)
 #> $bounds
-#>   events events_intervention events_control alpha_test
-#> 1     10                   8              2  0.1013193
-#> 2     50                  31             19  0.1013193
-#> 3    100                  57             43  0.1013193
+#>   events events_treatment events_control alpha_test
+#> 1     10                8              2  0.1013193
+#> 2     50               31             19  0.1013193
+#> 3    100               57             43  0.1013193
 #> 
 #> $stopprob
 #> $stopprob$`0.5`

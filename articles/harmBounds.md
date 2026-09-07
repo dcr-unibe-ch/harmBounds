@@ -7,7 +7,7 @@ event based approach.
 The idea is that under the null hypothesis of no safety concern, safety
 events are expected to occur at a frequency proportional to the
 randomization ratio. We can therefore do one sample binomial exact tests
-on the proportion of events in the intervention arm. Evidence that this
+on the proportion of events in the treatment arm. Evidence that this
 proportion higher than what would be expected from randomization would
 indicate a safety problem.
 
@@ -18,8 +18,8 @@ of stopping under alternative scenarios of some degree of safety
 problems (the power). An overall Type I error control can also be
 implemented but we would usually not recommend that for safety testing,
 as the consequence of a Type II error (not stopping for safety if the
-intervention is not safe) is arguably worse than of a Type I error
-(stopping if the intervention is safe).
+treatment is not safe) is arguably worse than of a Type I error
+(stopping if the treatment is safe).
 
 The procedure is computationally efficient and fully reproducible, as
 all calculations are exact and derived in closed form from the binomial
@@ -30,7 +30,7 @@ to a specific type of event.
 
 Stopping boundaries can be calculated with function `getHarmBound`.
 Let’s assume a trial with 10 safety interim analyses after every 10
-events (combined over both groups) up to a total of 100 events and a
+events (combined over both arms) up to a total of 100 events and a
 nominal test-wise alpha of 0.025.
 
 ``` r
@@ -38,17 +38,17 @@ nominal test-wise alpha of 0.025.
 hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5)
 hb
 #> $bounds
-#>    events events_intervention events_control alpha_test
-#> 1      10                   9              1      0.025
-#> 2      20                  15              5      0.025
-#> 3      30                  21              9      0.025
-#> 4      40                  27             13      0.025
-#> 5      50                  33             17      0.025
-#> 6      60                  39             21      0.025
-#> 7      70                  44             26      0.025
-#> 8      80                  50             30      0.025
-#> 9      90                  55             35      0.025
-#> 10    100                  61             39      0.025
+#>    events events_treatment events_control alpha_test
+#> 1      10                9              1      0.025
+#> 2      20               15              5      0.025
+#> 3      30               21              9      0.025
+#> 4      40               27             13      0.025
+#> 5      50               33             17      0.025
+#> 6      60               39             21      0.025
+#> 7      70               44             26      0.025
+#> 8      80               50             30      0.025
+#> 9      90               55             35      0.025
+#> 10    100               61             39      0.025
 #> 
 #> $stopprob
 #> $stopprob$`0.5`
@@ -74,8 +74,8 @@ hb
 ```
 
 The data frame *bounds* specifies the boundaries at each interim
-analysis, *events_intervention* is the minimal number of events in the
-intervention group that would lead to a stopping of the trial. The list
+analysis, *events_treatment* is the minimal number of events in the
+treatment arm that would lead to a stopping of the trial. The list
 *stopprob* contains stopping probability at each analysis for the null
 and optionally alternative hypotheses (see below). Data frame *opchar*
 shows the cumulative stopping probability and the expected number of
@@ -100,14 +100,14 @@ hb$opchar
 
 ## Alternative specification of rejection criteria
 
-Instead of using an alpha for each test, we can also control the overall
+Instead of using an alpha for each test, we can also control the
 family-wise type I error rate at a specific level (even though we do not
 necessarily recommend that). Refer to [Choosing the test-wise
 alpha](#sec-alpha) for more details.
 
 ``` r
 
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), totalAlpha = 0.05, pH0 = 0.5)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_total = 0.05, pH0 = 0.5)
 hb$opchar
 #>     p cum_stop_prob expected_events hyp
 #> 1 0.5    0.05104241        97.33673  H0
@@ -115,37 +115,37 @@ hb$opchar
 
 The overall stopping probability under H0 (the type I error) is 5.1%,
 i.e. as close to 5% as possible (given the discrete nature of the
-test).If a strict control at 5% would required a *totalAlpha* of 0.049
+test).If a strict control at 5% would required a *alpha_total* of 0.049
 would have to be chosen.
 
 Another more sensible option would be to target the type II error (or
 the power) for a specific alternative. This option requires the
 specification of an alternative, e.g. assuming that 60% of the events
-occuring in the experimental group would indicate a safety problem (see
+occuring in the experimental arm would indicate a safety problem (see
 [Operating characteristics](#sec-opchar) for more details about the
 alternatives).
 
 ``` r
 
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), pH0 = 0.5,
-  power = 0.8, pH1 = 0.6)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), power = 0.8, 
+  pH0 = 0.5, pH1 = 0.6)
 hb$opchar
 #>     p cum_stop_prob expected_events hyp
 #> 1 0.5     0.1980100        87.63776  H0
 #> 2 0.6     0.8018467        52.56440  H1
 ```
 
-Specifiying *totalAlpha* or *power* is much slower as it relies on an
+Specifying *alpha_total* or *power* is much slower as it relies on an
 iterative procedure ro determine the alpha used at each step. It could
-make sense to first determine the alpha per test and then use it
-directly in `getHarmBound`.
+make sense to first determine the *alpha_test* and then use it directly
+in `getHarmBound`.
 
-This can be done separately using function *getAlphaPerTest*:
+This can be done separately using function `getAlphaPerTest`:
 
 ``` r
 
 alphaPerTest<-getAlphaPerTest(nevents = seq(10, 100, by = 10), 
-  totalAlpha = 0.05, pH0 = 0.5)
+  alpha_total = 0.05, pH0 = 0.5)
 
 alphaPerTest
 #> [1] 0.01760014
@@ -159,7 +159,7 @@ alphaPerTest
 
 ## Plotting of the boundaries
 
-The boundaries can be plotted using *harmboundPlot* (or the
+The boundaries can be plotted using `harmboundPlot` (or the
 harmbound.plot-method):
 
 ``` r
@@ -187,9 +187,8 @@ plot(hb)
 ![](harmBounds_files/figure-html/unnamed-chunk-8-1.png)
 
 Observed data can be added as vector with 0 and 1, indicated the
-sequence of the groups in which events occurred (0 being the control and
-1 the intervention group). In this example, the boundary is not
-breached.
+sequence of the arms in which events occurred (0 being the control and 1
+the treatment arm). In this example, the boundary is not breached.
 
 ``` r
 
@@ -206,19 +205,19 @@ Stopping probabilities and expected number of events can be obtained for
 alternative scenarios with the `getHarmBound` function. The alternative
 hypothesis can be specified as
 
-- pH1: the proportion of the events in the intervention group, with 0.5
-  being the null scenario for a 1:1 rando, and numbers from 0.5 to 1
+- pH1: the proportion of the events in the treatment arm, with 0.5 being
+  the null scenario for a 1:1 rando, and numbers from 0.5 to 1
   indicating a safety problem.
 
-- rrH1: the risk ratio (intervention / control), with 1 being the null
+- rrH1: the risk ratio (treatment / control), with 1 being the null
   scenario and numbers \>1 indicating a safety problem.
 
-- rdH1: the risk difference (intervention minus control), with 0 being
-  the null scenario and numbers \>0 indicating a safety problem. Here
-  the control proportion (r0) and the total number of participants (n)
-  have to be specified.
+- rdH1: the risk difference (treatment minus control), with 0 being the
+  null scenario and numbers \>0 indicating a safety problem. Here the
+  control proportion (r0) and the total number of participants (n) have
+  to be specified.
 
-- orH1: the odds ratio (intervention / control), with 1 being the null
+- orH1: the odds ratio (treatment / control), with 1 being the null
   scenario and number \>1 indicating a safety problem. Here the control
   proportion (r0) has to be specified.
 
@@ -227,22 +226,22 @@ options (pH1 or rrH1).
 
 ``` r
 
-#with proportion of events in the intervention group:
+#with proportion of events in the treatment arm:
 hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
   pH1 = 0.6, maxevents = 150)
 hb
 #> $bounds
-#>    events events_intervention events_control alpha_test
-#> 1      10                   9              1      0.025
-#> 2      20                  15              5      0.025
-#> 3      30                  21              9      0.025
-#> 4      40                  27             13      0.025
-#> 5      50                  33             17      0.025
-#> 6      60                  39             21      0.025
-#> 7      70                  44             26      0.025
-#> 8      80                  50             30      0.025
-#> 9      90                  55             35      0.025
-#> 10    100                  61             39      0.025
+#>    events events_treatment events_control alpha_test
+#> 1      10                9              1      0.025
+#> 2      20               15              5      0.025
+#> 3      30               21              9      0.025
+#> 4      40               27             13      0.025
+#> 5      50               33             17      0.025
+#> 6      60               39             21      0.025
+#> 7      70               44             26      0.025
+#> 8      80               50             30      0.025
+#> 9      90               55             35      0.025
+#> 10    100               61             39      0.025
 #> 
 #> $stopprob
 #> $stopprob$`0.5`
@@ -286,9 +285,9 @@ condition.
 
 We would stop in 7.2% of the trials under the null (no safety problem)
 and in 59.2% under the alternative (safety problem with 60% of the
-events in the intervention group). Because of the higher probability of
-early stopping, the expected number of events is reduced from 142 under
-H0 to 91 under H1.
+events in the treatment arm). Because of the higher probability of early
+stopping, the expected number of events is reduced from 142 under H0 to
+91 under H1.
 
 The (cumulative) stopping probabilities at each step can be plotted
 using *absstopPlot* or *cumstopPlot* (or the harmbound.plot-methods). We
@@ -345,7 +344,7 @@ probabilities for a grid of alphas:
 ``` r
 
 alphaPerTest <- getAlphaPerTest(nevents = seq(10, 100, by = 10), pH0 = 0.5,
-  totalAlpha = 0.05)
+  alpha_total = 0.05)
 alist<-c(0.001,0.01,alphaPerTest,0.025,0.05)
 
 hbl<-lapply(alist,function(x)
@@ -358,7 +357,7 @@ hbd$alpha<-as.factor(round(hbd$alpha,4))
 ggplot(hbd, aes(x = p, y = cum_stop_prob, colour=alpha)) + 
     geom_line() +
     ylab("Stopping probability") +
-    xlab("Proportion of events in intervention group") +
+    xlab("Proportion of events in treatment arm") +
     scale_x_continuous(breaks=seq(0,1,by=0.1),limits=c(0.2,0.8)) +
     scale_y_continuous(breaks=seq(0,1,by=0.2))
 ```
@@ -371,7 +370,7 @@ ggplot(hbd, aes(x = p, y = cum_stop_prob, colour=alpha)) +
 ggplot(hbd, aes(x = p, y = expected_events, colour=alpha)) + 
     geom_line() +
     ylab("Expected number of events") +
-    xlab("Proportion of events in intervention group") +
+    xlab("Proportion of events in treatment arm") +
     scale_x_continuous(breaks=seq(0,1,by=0.1),limits=c(0.2,0.8)) +
     scale_y_continuous(limits=c(0, 150))
 ```
@@ -383,7 +382,7 @@ or on the transformed risk ratio scale:
 ``` r
 
 alphaPerTest <- getAlphaPerTest(nevents = seq(10, 100, by = 10), pH0 = 0.5,
-  totalAlpha = 0.05)
+  alpha_total = 0.05)
 alist<-c(0.001,0.01,alphaPerTest,0.025,0.05)
 
 hbl<-lapply(alist,function(x)
@@ -397,7 +396,7 @@ hbd$lrr<-log(hbd$rr)
 ggplot(hbd, aes(x = rr, y = cum_stop_prob, colour=alpha)) + 
     geom_line() +
     ylab("Stopping probability") +
-    xlab("Risk ratio (intervention/control)") +
+    xlab("Risk ratio (treatment/control)") +
     scale_x_continuous(trans='log', breaks=c(0.5,0.75,1,1.5,2,3,4),
       minor_breaks=NULL,limits=c(0.5,5)) +
     scale_y_continuous(breaks=seq(0,1,by=0.2))
@@ -445,7 +444,7 @@ hbd$ni<-factor(hbd$ni,levels=nism)
 ggplot(hbd, aes(x = p, y = cum_stop_prob, colour=ni)) + 
     geom_line() +
     ylab("Stopping probability") +
-    xlab("Proportion of events in intervention group") +
+    xlab("Proportion of events in treatment arm") +
     scale_x_continuous(breaks=seq(0,1,by=0.1),limits=c(0.2,0.8)) +
     scale_y_continuous(breaks=seq(0,1,by=0.2)) +
     labs(colour="Number of IAs")
@@ -472,7 +471,7 @@ hbd$ni<-as.factor(hbd$ni)
 ggplot(hbd, aes(x = p, y = cum_stop_prob, colour=ni)) + 
     geom_line() +
     ylab("Stopping probability") +
-     xlab("Proportion of events in intervention group") +
+     xlab("Proportion of events in treatment arm") +
     scale_x_continuous(breaks=seq(0,1,by=0.1),limits=c(0.2,0.8)) +
     scale_y_continuous(breaks=seq(0,1,by=0.2)) +
     labs(colour="Total number of events")

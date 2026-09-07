@@ -1,6 +1,6 @@
 # Test-wise alpha necessary to control either the family-wise type I error or the power at a specified level
 
-Exactly one of totalAlpha or power have to be specified. The power
+Exactly one of alpha_total or power have to be specified. The power
 requires the specification of an alternative via one of pH1, rrH1, orH1
 or rdH1.
 
@@ -9,7 +9,7 @@ or rdH1.
 ``` r
 getAlphaPerTest(
   nevents,
-  totalAlpha = NULL,
+  alpha_total = NULL,
   power = NULL,
   pH0 = 0.5,
   alpha.interval = c(10^(-10), 1),
@@ -18,7 +18,8 @@ getAlphaPerTest(
   rrH1 = NULL,
   orH1 = NULL,
   rdH1 = NULL,
-  r0 = NULL
+  r0 = NULL,
+  ...
 )
 ```
 
@@ -28,9 +29,9 @@ getAlphaPerTest(
 
   vector with number of events at which an interim analysis is done
 
-- totalAlpha:
+- alpha_total:
 
-  target overall family-wise type I error
+  target family-wise type I error
 
 - power:
 
@@ -38,8 +39,8 @@ getAlphaPerTest(
 
 - pH0:
 
-  proportion of events in the intervention arm under the null
-  hypothesis, typically based on randomization ratio (e.g. 0.5 for a 1:1
+  proportion of events in the treatment arm under the null hypothesis,
+  typically based on randomization ratio (e.g. 0.5 for a 1:1
   randomization)
 
 - alpha.interval:
@@ -54,28 +55,32 @@ getAlphaPerTest(
 - pH1:
 
   optional alternative, numeric vector, proportion of events in the
-  intervention arm
+  treatment arm
 
 - rrH1:
 
-  alternative specification of alternative as risk ratio (intervention /
+  alternative specification of alternative as risk ratio (treatment /
   control)
 
 - orH1:
 
-  alternative specification of alternative as risk ratio (intervention /
+  alternative specification of alternative as risk ratio (treatment /
   control). Requires the control proportion (r0).
 
 - rdH1:
 
   alternative specification of alternative as risk difference
-  (intervention - control). Requires the control proportion (r0) and the
+  (treatment - control). Requires the control proportion (r0) and the
   number of participants (n).
 
 - r0:
 
-  risk in the control group. Required if the alternative is given as
-  risk difference or odds ratio.
+  risk in the control arm. Required if the alternative is given as risk
+  difference or odds ratio.
+
+- ...:
+
+  input for backward compatibility
 
 ## Value
 
@@ -85,15 +90,15 @@ Test-wide alpha
 
 ``` r
 #Control overall family-wise type I error:
-apt<-getAlphaPerTest(nevents = c(10,50,100), totalAlpha = 0.05, pH0 = 0.5)
+apt<-getAlphaPerTest(nevents = c(10,50,100), alpha_total = 0.05, pH0 = 0.5)
 apt
 #> [1] 0.03245429
 getHarmBound(nevents = c(10,50,100),alpha_test = apt, pH0 = 0.5)
 #> $bounds
-#>   events events_intervention events_control alpha_test
-#> 1     10                   9              1 0.03245429
-#> 2     50                  33             17 0.03245429
-#> 3    100                  60             40 0.03245429
+#>   events events_treatment events_control alpha_test
+#> 1     10                9              1 0.03245429
+#> 2     50               33             17 0.03245429
+#> 3    100               60             40 0.03245429
 #> 
 #> $stopprob
 #> $stopprob$`0.5`
@@ -116,10 +121,10 @@ apt
 #> [1] 0.1013193
 getHarmBound(nevents = c(10,50,100),alpha_test = apt, pH0 = 0.5, pH1 = 0.6)
 #> $bounds
-#>   events events_intervention events_control alpha_test
-#> 1     10                   8              2  0.1013193
-#> 2     50                  31             19  0.1013193
-#> 3    100                  57             43  0.1013193
+#>   events events_treatment events_control alpha_test
+#> 1     10                8              2  0.1013193
+#> 2     50               31             19  0.1013193
+#> 3    100               57             43  0.1013193
 #> 
 #> $stopprob
 #> $stopprob$`0.5`

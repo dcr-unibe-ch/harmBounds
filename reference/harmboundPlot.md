@@ -24,8 +24,7 @@ harmboundPlot(
 - observed:
 
   optional observed number of events, as a vector with the sequential
-  groups in which an event occured (0 for control and 1 for
-  intervention)
+  arms in which an event occured (0 for control and 1 for treatment)
 
 - colourbound:
 

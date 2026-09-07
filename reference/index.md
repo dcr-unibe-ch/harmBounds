@@ -5,7 +5,7 @@
 - [`getHarmBound()`](https://dcr-unibe-ch.github.io/harmBounds/reference/getHarmBound.md)
   : Harm boundaries for safety testing
 - [`convertRisks()`](https://dcr-unibe-ch.github.io/harmBounds/reference/convertRisks.md)
-  : Convert the proportion of events in the intervention groups to risk
+  : Convert the proportion of events in the treatment arms to risk
   differences and ratios (and vice versa)
 - [`findbound()`](https://dcr-unibe-ch.github.io/harmBounds/reference/findbound.md)
   : Find stopping boundary via binomial exact tests
