@@ -48,8 +48,8 @@ plot.harmbound <- function(x, which = "bounds", ...){
 #'
 #' @param harmbound harmbounds objects as generated using the getHarmBound function
 #' @param observed optional observed number of events,
-#'	as a vector with the sequential groups in which an event occured
-#' (0 for control and 1 for intervention)
+#'	as a vector with the sequential arms in which an event occured
+#' (0 for control and 1 for treatment)
 #' @param colourbound vector with two colours for the bounds, in and out, default is blue and red
 #' @param fill_alpha opacity of the colours for the bounds
 #' @param colourobserved colour for the line with the observed events
@@ -82,35 +82,38 @@ harmboundPlot<-function(harmbound,
 	pH0<-harmbound$stopprob[[1]]$pH[1]
 	
 	#limit for plot
-	ymax<-max(hbs$events_intervention,na.rm=TRUE)
+	ymax<-max(hbs$events_treatment,na.rm=TRUE)
 	xmax<-max(hbs$events,na.rm=TRUE)
 
 	if (!is.null(observed)) {
 		obs<-data.frame(events_control=cumsum(observed==0),
-			events_intervention=cumsum(observed==1))
+			events_treatment=cumsum(observed==1))
 		obs<-rbind(c(0,0),obs)
 		obs$events<-apply(obs,1,sum)
-		ymax<-max(obs$events_intervention,ymax,na.rm=TRUE)
+		ymax<-max(obs$events_treatment,ymax,na.rm=TRUE)
 		xmax<-max(obs$events,xmax,na.rm=TRUE)
 	}
 
 	out<-ggplot() +
 		geom_rect(data=hbs,
 			mapping=aes(xmin=.data$events-0.5, xmax=.data$events+0.5,
-			ymin=0, ymax=.data$events_intervention-0.5),
-			color=NA, fill=colourbound[1], alpha=fill_alpha) +
+			ymin=0, ymax=.data$events_treatment-0.5, fill="Continue"),
+			color=NA, alpha=fill_alpha) +
 		geom_rect(data=hbs,
 			mapping=aes(xmin=.data$events-0.5, xmax=.data$events+0.5,
-			ymin=.data$events_intervention-0.5, ymax=.data$events),
-			color=NA, fill=colourbound[2], alpha=fill_alpha) +
+			ymin=.data$events_treatment-0.5, ymax=.data$events, fill = "Stop"),
+			color=NA, alpha=fill_alpha) +
 		scale_y_continuous(limits=c(0,xmax+1)) +
 		scale_x_continuous(limits=c(0,xmax+1)) +
 		xlab("Total number of events") +
-		ylab("Number of events in intervention group")
+		ylab("Number of events in treatment arm") + 
+		scale_fill_manual(name = "", 
+			values = c("Stop" = colourbound[2], "Continue" = colourbound[1]),
+			breaks = c("Stop", "Continue"))
 
 	if (!is.null(observed)) {
 		out<-out +
-			geom_step(aes(x = .data$events, y = .data$events_intervention),
+			geom_step(aes(x = .data$events, y = .data$events_treatment),
 				data=obs,
 				colour = colourobserved)
 	}
@@ -226,7 +229,7 @@ opcharStopPlot<-function(harmbound) {
 		ggplot(aes(x=.data$p, y=.data$cum_stop_prob)) + 
 		geom_line() +
 		ylab("Cumulative stopping probability") + 
-		xlab("Proportion of events in intervention group") 
+		xlab("Proportion of events in treatment arm") 
 	
 	if (nrow(hbs)<20) {
 		out<-out + geom_point() 
@@ -265,7 +268,7 @@ opcharNPlot<-function(harmbound) {
 		ggplot(aes(x=.data$p, y=.data$expected_events)) + 
 		geom_line() +
 		ylab("Expected number of events") + 
-		xlab("Proportion of events in intervention group") 
+		xlab("Proportion of events in treatment arm") 
 		
 	if (nrow(hbs)<20) {
 		out<-out + geom_point() 

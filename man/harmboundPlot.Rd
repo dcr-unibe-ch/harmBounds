@@ -17,8 +17,8 @@ harmboundPlot(
 \item{harmbound}{harmbounds objects as generated using the getHarmBound function}
 
 \item{observed}{optional observed number of events,
-as a vector with the sequential groups in which an event occured
-(0 for control and 1 for intervention)}
+as a vector with the sequential arms in which an event occured
+(0 for control and 1 for treatment)}
 
 \item{colourbound}{vector with two colours for the bounds, in and out, default is blue and red}
 

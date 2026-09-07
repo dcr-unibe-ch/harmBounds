@@ -32,7 +32,7 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 
 \item{rdH1}{risk difference (experimental - control). Requires the control proportion (r0) and the number of participants (n).}
 
-\item{r0}{risk in the control group. Required if the effect is given as risk difference or odds ratio.}
+\item{r0}{risk in the control arm. Required if the effect is given as risk difference or odds ratio.}
 
 \item{n}{total number of participants. Required if the effect is given as risk difference.}
 }

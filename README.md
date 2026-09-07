@@ -24,13 +24,12 @@ library(harmBounds)
 ### Stopping boundaries
 
 ``` r
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5, maxevents = 150)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025, pH0 = 0.5,
+  maxevents = 150)
 plot(hb)
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" alt="" width="100%" />
-
-### Operating characteristics
 
 Stopping probabilities and expected number of events can be obtained for
 alternative scenarios.
