@@ -4,22 +4,23 @@
 #' Test-wise alpha necessary to control either 
 #'	the family-wise type I error or the power at a specified level
 #'
-#'	Exactly one of totalAlpha or power have to be specified.
+#'	Exactly one of alpha_total or power have to be specified.
 #' The power requires the specification of an alternative via one of pH1, rrH1, orH1 or rdH1.
 #'
 #' @param nevents vector with number of events at which an interim analysis is done
-#' @param totalAlpha target overall family-wise type I error
+#' @param alpha_total target family-wise type I error
 #' @param power target power at the specified alternative
-#' @param pH0 proportion of events in the intervention arm under the null hypothesis,
+#' @param pH0 proportion of events in the treatment arm under the null hypothesis,
 #'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
 #' @param alpha.interval Range for test-wise alpha, c(10^(-10),0.05) by default
 #' @param maxevents optional maximum number of events expected for the trial (over both arms), 
 #'	used to calculate the expected number of events
-#' @param pH1 optional alternative, numeric vector, proportion of events in the intervention arm
-#' @param rrH1 alternative specification of alternative as risk ratio (intervention / control)
-#' @param orH1 alternative specification of alternative as risk ratio (intervention / control). Requires the control proportion (r0).
-#' @param rdH1 alternative specification of alternative as risk difference (intervention - control). Requires the control proportion (r0) and the number of participants (n).
-#' @param r0 risk in the control group. Required if the alternative is given as risk difference or odds ratio.
+#' @param pH1 optional alternative, numeric vector, proportion of events in the treatment arm
+#' @param rrH1 alternative specification of alternative as risk ratio (treatment / control)
+#' @param orH1 alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).
+#' @param rdH1 alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).
+#' @param r0 risk in the control arm. Required if the alternative is given as risk difference or odds ratio.
+#' @param ... input for backward compatibility
 #'
 #' @return Test-wide alpha
 #'
@@ -29,7 +30,7 @@
 #'
 #' @examples
 #'	#Control overall family-wise type I error:
-#'	apt<-getAlphaPerTest(nevents = c(10,50,100), totalAlpha = 0.05, pH0 = 0.5)
+#'	apt<-getAlphaPerTest(nevents = c(10,50,100), alpha_total = 0.05, pH0 = 0.5)
 #'	apt
 #'	getHarmBound(nevents = c(10,50,100),alpha_test = apt, pH0 = 0.5)
 #'
@@ -38,18 +39,25 @@
 #'	apt
 #'	getHarmBound(nevents = c(10,50,100),alpha_test = apt, pH0 = 0.5, pH1 = 0.6)
 getAlphaPerTest <- function(nevents,
-	totalAlpha = NULL, power = NULL,
+	alpha_total = NULL, power = NULL,
 	pH0 = 0.5,
 	alpha.interval = c(10^(-10), 1),
 	maxevents = NULL,
 	pH1 = NULL, 
 	rrH1 = NULL, orH1 = NULL, rdH1 = NULL,
-	r0 = NULL) {
+	r0 = NULL, ...) {
 	
-	#either totalAlpha or power
-	nn <- sum(!is.null(totalAlpha), !is.null(power))
+	#totalAlpha backwards compatibility
+	input<-list(...)
+	if ("totalAlpha" %in% names(input) && is.null(alpha_total)) {
+		warning("totalAlpha will be depreciated, please use alpha_total")	
+		alpha_total<-input[["totalAlpha"]]
+	}
+
+	#either alpha_total or power
+	nn <- sum(!is.null(alpha_total), !is.null(power))
 	if (nn!=1) {
-		stop("Either 'totalAlpha' or 'power' must be specified.")
+		stop("Either 'alpha_total' or 'power' must be specified.")
 	}
 	
 	#check alternative if power 
@@ -73,8 +81,8 @@ getAlphaPerTest <- function(nevents,
 			rrH1 = rrH1[1], orH1 = orH1[1], rdH1 = rdH1[1],
 			r0 = r0)
 			
-		if (!is.null(totalAlpha)) { 
-			return(harmBounds$opchar[1,"cum_stop_prob"] - totalAlpha)
+		if (!is.null(alpha_total)) { 
+			return(harmBounds$opchar[1,"cum_stop_prob"] - alpha_total)
 		} else {
 			return(harmBounds$opchar[2,"cum_stop_prob"] - power)
 		}		
@@ -94,46 +102,50 @@ getAlphaPerTest <- function(nevents,
 
 #' Harm boundaries for safety testing
 #'
-#' Calculates the boundaries at each interim analysis, i.e. the number of events in the intervention group
+#' Calculates the boundaries at each interim analysis, i.e. the number of events in the treatment arm
 #' that would lead to a stopping of the trial based binomial exact tests,
-#' assuming that the events should be equally distributed among both groups.
+#' assuming that the events should be equally distributed among both arms.
 #' The indicated scenario (and all more extreme) 
 #'	would lead to a rejection of H0 (equal distribution) and a stopping for safety.
 #'
 #' The rejection region for the binomial exact tests must be given for either 
-#'		each test (alpha_test), overall (totalAlpha, the family-wise error rate) or
+#'		each test (alpha_test), overall (alpha_total, the family-wise error rate) or
 #'		by the targetted power for the specified alternative.
 #'
 #' @param nevents vector with number of events (over both arms) at which an interim analysis is done
 #' @param alpha_test the nominal alpha level to use for each test
-#' @param totalAlpha target overall family-wise type I error
+#' @param alpha_total target overall family-wise type I error
 #' @param power target power at the specified alternative
-#' @param pH0 proportion of events in the intervention arm under the null hypothesis,
+#' @param pH0 proportion of events in the treatment arm under the null hypothesis,
 #'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
 #' @param maxevents optional maximum number of events expected for the trial (over both arms), used to calculate the expected number of events
-#' @param pH1 optional alternative, numeric vector, proportion of events in the intervention arm
-#' @param rrH1 alternative specification of alternative as risk ratio (intervention / control)
-#' @param orH1 alternative specification of alternative as risk ratio (intervention / control). Requires the control proportion (r0).
-#' @param rdH1 alternative specification of alternative as risk difference (intervention - control). Requires the control proportion (r0) and the number of participants (n).
-#' @param r0 risk in the control group. Required if the alternative is given as risk difference or odds ratio.
+#' @param pH1 optional alternative, numeric vector, proportion of events in the treatment arm
+#' @param rrH1 alternative specification of alternative as risk ratio (treatment / control)
+#' @param orH1 alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).
+#' @param rdH1 alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).
+#' @param r0 risk in the control arm. Required if the alternative is given as risk difference or odds ratio.
 #' @return a list with 3 data.frames: bounds, stopprob and opchar.
 #' bounds has a row for each interim analysis and columns for
 #'	number of events (events),
-#'	number of events in control and intervention group that would lead to a stop
-#'	(events_intervention, events_control), and the nominal alpha for each test (alpha_test).
+#'	number of events in control and treatment arm that would lead to a stop
+#'	(events_treatment, events_control), and the nominal alpha for each test (alpha_test).
 #'  stopprob has a row for each interim analysis and columns for
 #'	number of events (events),
 #'	the hypothesis (pH),
 #'	the stopping probability (stop_prob), and
 #'	the cumulative stopping probability (cum_stop_prob)
 #'	opchar has a row for each hypothesis (null plus each alternative) and columns 
-#'	for the assumed proportion of events in the intervention group (p),
+#'	for the assumed proportion of events in the treatment arm (p),
 #'	the cumulative stopping probabilities (cum_stop_prob) and 
 #'	the expected total number of events (expected_events)
 #'	for the null and each alternative.
 #'
 #'
 #' @export
+#'
+#'
+#' @seealso 
+#' Available plot methods: \code{\link{plot.harmbound}}
 #'
 #' @importFrom stats dbinom qbinom
 #'
@@ -154,13 +166,13 @@ getAlphaPerTest <- function(nevents,
 #' getHarmBound(nevents=c(10,50,100), alpha_test=0.025, pH0=0.5, rrH1=1.5, maxevents=150)
 #'
 #' # define the test so that an family-wise type I error of 5% is achieved
-#'	getHarmBound(nevents=c(10,50,100), totalAlpha=0.05, pH0=0.5)
+#'	getHarmBound(nevents=c(10,50,100), alpha_total=0.05, pH0=0.5)
 #'
 #' # define the test so that an over power of 80% is achieved
 #' # needs an alternative
 #'	getHarmBound(nevents=c(10,50,100), power=0.8, pH0=0.5, pH1=0.6)
 getHarmBound <- function(nevents,
-	alpha_test = NULL, totalAlpha = NULL, power = NULL,
+	alpha_test = NULL, alpha_total = NULL, power = NULL,
 	pH0,
 	maxevents=NULL,
 	pH1=NULL, 
@@ -168,14 +180,14 @@ getHarmBound <- function(nevents,
 	r0=NULL){
 	
 	#get alpha_test of not given:
-	nn <- sum(!is.null(alpha_test) | !is.null(totalAlpha) | !is.null(power))
+	nn <- sum(!is.null(alpha_test) | !is.null(alpha_total) | !is.null(power))
 	if (nn!=1) {
-		stop("Exactly one of 'alpha_test', 'totalAlpha' or 'power' must be specified.")
+		stop("Exactly one of 'alpha_test', 'alpha_total' or 'power' must be specified.")
 	}
 	
 	if (is.null(alpha_test)) {
 		alpha_test<-getAlphaPerTest(nevents=nevents,
-			totalAlpha = totalAlpha, power = power,
+			alpha_total = alpha_total, power = power,
 			pH0 = pH0,
 			alpha.interval = c(10^(-10), 1),
 			maxevents = maxevents,
@@ -198,26 +210,26 @@ getHarmBound <- function(nevents,
 #'
 #' @param nevents vector with number of events (over both arms) at which an interim analysis is done
 #' @param alpha_test the nominal alpha level to use for each test
-#' @param pH0 proportion of events in the intervention arm under the null hypothesis,
+#' @param pH0 proportion of events in the treatment arm under the null hypothesis,
 #'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
 #' @param maxevents optional maximum number of events expected for the trial (over both arms), used to calculate the expected number of events
-#' @param pH1 optional alternative, numeric vector, proportion of events in the intervention arm
-#' @param rrH1 alternative specification of alternative as risk ratio (intervention / control)
-#' @param orH1 alternative specification of alternative as risk ratio (intervention / control). Requires the control proportion (r0).
-#' @param rdH1 alternative specification of alternative as risk difference (intervention - control). Requires the control proportion (r0) and the number of participants (n).
-#' @param r0 risk in the control group. Required if the alternative is given as risk difference or odds ratio.
+#' @param pH1 optional alternative, numeric vector, proportion of events in the treatment arm
+#' @param rrH1 alternative specification of alternative as risk ratio (treatment / control)
+#' @param orH1 alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).
+#' @param rdH1 alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).
+#' @param r0 risk in the control arm. Required if the alternative is given as risk difference or odds ratio.
 #' @return a list with 3 data.frames: bounds, stopprob and opchar.
 #' bounds has a row for each interim analysis and columns for
 #'	number of events (events),
-#'	number of events in control and intervention group that would lead to a stop
-#'	(events_intervention, events_control), and the nominal alpha for each test (alpha_test).
+#'	number of events in control and treatment amrs that would lead to a stop
+#'	(events_treatment, events_control), and the nominal alpha for each test (alpha_test).
 #'  stopprob has a row for each interim analysis and columns for
 #'	number of events (events),
 #'	the hypothesis (pH),
 #'	the stopping probability (stop_prob), and
 #'	the cumulative stopping probability (cum_stop_prob)
 #'	opchar has a row for each hypothesis (null plus each alternative) and columns 
-#'	for the assumed proportion of events in the intervention group (p),
+#'	for the assumed proportion of events in the treatment arm (p),
 #'	the cumulative stopping probabilities (cum_stop_prob) and 
 #'	the expected total number of events (expected_events)
 #'	for the null and each alternative.
@@ -337,11 +349,11 @@ getHarmBound1 <- function(nevents, alpha_test, pH0,
 		if (i==1) {
 			boundOut<-out$Bounds
 			names(boundOut)[names(boundOut)=="n"] <- "events"
-			names(boundOut)[names(boundOut)=="StoppingBound"] <- "events_intervention"
-			boundOut$events_control <- boundOut$events - boundOut$events_intervention		
+			names(boundOut)[names(boundOut)=="StoppingBound"] <- "events_treatment"
+			boundOut$events_control <- boundOut$events - boundOut$events_treatment		
 			boundOut <- cbind(boundOut,alpha_test = bounds$cutoff)
 			
-			stopifnot(is.na(boundOut[!boundOut$events %in% nevents,"events_intervention"]))
+			stopifnot(is.na(boundOut[!boundOut$events %in% nevents,"events_treatment"]))
 			boundOutna<-boundOut[boundOut$events %in% nevents, ]
 			rownames(boundOutna)<-1:nrow(boundOutna)
 		}
@@ -401,7 +413,7 @@ getHarmBound1 <- function(nevents, alpha_test, pH0,
 #'
 #' @param Bounds Vector of stopping bounds after each event.
 #'	For event totals where stopping is not permitted the 'Bound' should be set to NA.
-#' @param pH0 proportion of events in the intervention arm under the null hypothesis,
+#' @param pH0 proportion of events in the treatment arm under the null hypothesis,
 #'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
 #' @param returnPns Whether to inlcude the binomial random walk in the output
 #'
@@ -505,18 +517,18 @@ pNS <- function(Bounds, pH0=0.5, returnPns=FALSE){
 }
 
 
-#' Convert the proportion of events in the intervention groups to risk differences and ratios (and vice versa)
+#' Convert the proportion of events in the treatment arms to risk differences and ratios (and vice versa)
 #'
-#' @param eprop proportion of events in intervention group
+#' @param eprop proportion of events in treatment arm
 #' @param etotal total number of events
 #' @param rd risk difference
 #' @param rr risk ratio
 #' @param or odds ratio
-#' @param r0 risk in the control group
-#' @param n0 number of patients in the control group
-#' @param n1 number of patients in the intervention group
+#' @param r0 risk in the control arm
+#' @param n0 number of patients in the control arm
+#' @param n1 number of patients in the treatment arm
 #'
-#' @return vector with risks in control and intervention group (r0, r1),
+#' @return vector with risks in control and treatment arm (r0, r1),
 #'	the risk difference (rd), risk ratio (rr) and odds ratio (or)
 #'
 #' @export
@@ -552,7 +564,7 @@ convertRisks<-function(eprop=NULL,etotal=NULL,
 	if (!is.null(rd) | !is.null(rr) | !is.null(or)) {
 
 		if (is.null(r0)) {
-			stop("r0 has to be given for conversion to proportion of events in intervention group.")
+			stop("r0 has to be given for conversion to proportion of events in treatment arm.")
 		}
 
 		if (!is.null(rd)) {

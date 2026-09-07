@@ -7,7 +7,7 @@ the family-wise type I error or the power at a specified level}
 \usage{
 getAlphaPerTest(
   nevents,
-  totalAlpha = NULL,
+  alpha_total = NULL,
   power = NULL,
   pH0 = 0.5,
   alpha.interval = c(10^(-10), 1),
@@ -16,17 +16,18 @@ getAlphaPerTest(
   rrH1 = NULL,
   orH1 = NULL,
   rdH1 = NULL,
-  r0 = NULL
+  r0 = NULL,
+  ...
 )
 }
 \arguments{
 \item{nevents}{vector with number of events at which an interim analysis is done}
 
-\item{totalAlpha}{target overall family-wise type I error}
+\item{alpha_total}{target family-wise type I error}
 
 \item{power}{target power at the specified alternative}
 
-\item{pH0}{proportion of events in the intervention arm under the null hypothesis,
+\item{pH0}{proportion of events in the treatment arm under the null hypothesis,
 typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 
 \item{alpha.interval}{Range for test-wise alpha, c(10^(-10),0.05) by default}
@@ -34,26 +35,28 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 \item{maxevents}{optional maximum number of events expected for the trial (over both arms),
 used to calculate the expected number of events}
 
-\item{pH1}{optional alternative, numeric vector, proportion of events in the intervention arm}
+\item{pH1}{optional alternative, numeric vector, proportion of events in the treatment arm}
 
-\item{rrH1}{alternative specification of alternative as risk ratio (intervention / control)}
+\item{rrH1}{alternative specification of alternative as risk ratio (treatment / control)}
 
-\item{orH1}{alternative specification of alternative as risk ratio (intervention / control). Requires the control proportion (r0).}
+\item{orH1}{alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).}
 
-\item{rdH1}{alternative specification of alternative as risk difference (intervention - control). Requires the control proportion (r0) and the number of participants (n).}
+\item{rdH1}{alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).}
 
-\item{r0}{risk in the control group. Required if the alternative is given as risk difference or odds ratio.}
+\item{r0}{risk in the control arm. Required if the alternative is given as risk difference or odds ratio.}
+
+\item{...}{input for backward compatibility}
 }
 \value{
 Test-wide alpha
 }
 \description{
-Exactly one of totalAlpha or power have to be specified.
+Exactly one of alpha_total or power have to be specified.
 The power requires the specification of an alternative via one of pH1, rrH1, orH1 or rdH1.
 }
 \examples{
 #Control overall family-wise type I error:
-apt<-getAlphaPerTest(nevents = c(10,50,100), totalAlpha = 0.05, pH0 = 0.5)
+apt<-getAlphaPerTest(nevents = c(10,50,100), alpha_total = 0.05, pH0 = 0.5)
 apt
 getHarmBound(nevents = c(10,50,100),alpha_test = apt, pH0 = 0.5)
 

@@ -12,7 +12,7 @@
 #' @param rrH1 risk ratio (experimental / control).
 #' @param orH1 risk ratio (experimental / control). Requires the control proportion (r0).
 #' @param rdH1 risk difference (experimental - control). Requires the control proportion (r0) and the number of participants (n).
-#' @param r0 risk in the control group. Required if the effect is given as risk difference or odds ratio.
+#' @param r0 risk in the control arm. Required if the effect is given as risk difference or odds ratio.
 #' @param n total number of participants. Required if the effect is given as risk difference.
 #'
 #' @return list with a dataframe with number of events in each group plus upper limit for stopping and indicator for whether stopped, plus indicators number of stops and time points at first stop
