@@ -11,6 +11,7 @@ getHarmBound(
   power = NULL,
   pH0,
   maxevents = NULL,
+  icc = NULL,
   pH1 = NULL,
   rrH1 = NULL,
   orH1 = NULL,
@@ -30,7 +31,10 @@ getHarmBound(
 \item{pH0}{proportion of events in the treatment arm under the null hypothesis,
 typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 
-\item{maxevents}{optional maximum number of events expected for the trial (over both arms), used to calculate the expected number of events}
+\item{maxevents}{optional maximum number of events expected for the trial (over both arms),
+used to calculate the expected number of events}
+
+\item{icc}{intraclass correlation if there is more than one event per patient}
 
 \item{pH1}{optional alternative, numeric vector, proportion of events in the treatment arm}
 
@@ -38,7 +42,7 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 
 \item{orH1}{alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).}
 
-\item{rdH1}{alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).}
+\item{rdH1}{alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0).}
 
 \item{r0}{risk in the control arm. Required if the alternative is given as risk difference or odds ratio.}
 }
@@ -67,7 +71,12 @@ The indicated scenario (and all more extreme)
 would lead to a rejection of H0 (equal distribution) and a stopping for safety.
 }
 \details{
-The rejection region for the binomial exact tests must be given for either
+If there are several events per patient, the intraclass correlation coefficient has to be given
+and a beta-binomial framework is used. The overdispersion factor (or design effect)
+by which the variance exceeds the regular binomial variance is printed. Note that the
+effective sample size is reduced by that factor.
+
+The rejection region for the binomial or beta-binomial exact tests must be given for either
 each test (alpha_test), overall (alpha_total, the family-wise error rate) or
 by the targetted power for the specified alternative.
 }

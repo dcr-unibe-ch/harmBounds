@@ -7,6 +7,9 @@
 #'	Exactly one of alpha_total or power have to be specified.
 #' The power requires the specification of an alternative via one of pH1, rrH1, orH1 or rdH1.
 #'
+#'	If there are several events per patient, the intraclass correlation coefficient has to be given
+#'	and a beta-binomial framework is used. 
+#'
 #' @param nevents vector with number of events at which an interim analysis is done
 #' @param alpha_total target family-wise type I error
 #' @param power target power at the specified alternative
@@ -15,10 +18,11 @@
 #' @param alpha.interval Range for test-wise alpha, c(10^(-10),0.05) by default
 #' @param maxevents optional maximum number of events expected for the trial (over both arms), 
 #'	used to calculate the expected number of events
+#' @param icc intraclass correlation if there is more than one event per patient
 #' @param pH1 optional alternative, numeric vector, proportion of events in the treatment arm
 #' @param rrH1 alternative specification of alternative as risk ratio (treatment / control)
-#' @param orH1 alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).
-#' @param rdH1 alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).
+#' @param orH1 alternative specification of alternative as odds ratio (treatment / control). Requires the control proportion (r0).
+#' @param rdH1 alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0).
 #' @param r0 risk in the control arm. Required if the alternative is given as risk difference or odds ratio.
 #' @param ... input for backward compatibility
 #'
@@ -27,6 +31,7 @@
 #' @export
 #'
 #' @importFrom stats uniroot
+#' @importFrom utils capture.output
 #'
 #' @examples
 #'	#Control overall family-wise type I error:
@@ -43,6 +48,7 @@ getAlphaPerTest <- function(nevents,
 	pH0 = 0.5,
 	alpha.interval = c(10^(-10), 1),
 	maxevents = NULL,
+	icc = NULL,
 	pH1 = NULL, 
 	rrH1 = NULL, orH1 = NULL, rdH1 = NULL,
 	r0 = NULL, ...) {
@@ -72,14 +78,16 @@ getAlphaPerTest <- function(nevents,
 	}
 	
     getCumAlpha <- function(alphaPerTest, nevents, pH0, ...) {
-        harmBounds <- getHarmBound1(
+        capture.output(
+			harmBounds <- getHarmBound1(
 			nevents = nevents,
 			alpha_test = alphaPerTest,
 			pH0 = pH0,
 			maxevents = maxevents,
+			icc = icc,
 			pH1 = pH1[1], 
 			rrH1 = rrH1[1], orH1 = orH1[1], rdH1 = rdH1[1],
-			r0 = r0)
+			r0 = r0))
 			
 		if (!is.null(alpha_total)) { 
 			return(harmBounds$opchar[1,"cum_stop_prob"] - alpha_total)
@@ -89,11 +97,13 @@ getAlphaPerTest <- function(nevents,
     }
 
 	ur<-uniroot(getCumAlpha, interval = alpha.interval, tol=1e-7,
-		nevents = nevents, pH0 = pH0,
-			maxevents = maxevents,
-			pH1 = pH1, 
-			rrH1 = rrH1, orH1 = orH1, rdH1 = rdH1,
-			r0 = r0)
+		nevents = nevents, 
+		pH0 = pH0,
+		maxevents = maxevents,
+		icc = icc,
+		pH1 = pH1, 
+		rrH1 = rrH1, orH1 = orH1, rdH1 = rdH1,
+		r0 = r0)
 			
 	return(ur$root)
 
@@ -108,7 +118,12 @@ getAlphaPerTest <- function(nevents,
 #' The indicated scenario (and all more extreme) 
 #'	would lead to a rejection of H0 (equal distribution) and a stopping for safety.
 #'
-#' The rejection region for the binomial exact tests must be given for either 
+#'	If there are several events per patient, the intraclass correlation coefficient has to be given
+#'	and a beta-binomial framework is used. The overdispersion factor (or design effect)
+#'	by which the variance exceeds the regular binomial variance is printed. Note that the 
+#'	effective sample size is reduced by that factor.
+#'
+#' The rejection region for the binomial or beta-binomial exact tests must be given for either 
 #'		each test (alpha_test), overall (alpha_total, the family-wise error rate) or
 #'		by the targetted power for the specified alternative.
 #'
@@ -118,11 +133,13 @@ getAlphaPerTest <- function(nevents,
 #' @param power target power at the specified alternative
 #' @param pH0 proportion of events in the treatment arm under the null hypothesis,
 #'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
-#' @param maxevents optional maximum number of events expected for the trial (over both arms), used to calculate the expected number of events
+#' @param maxevents optional maximum number of events expected for the trial (over both arms), 
+#'	used to calculate the expected number of events
+#' @param icc intraclass correlation if there is more than one event per patient
 #' @param pH1 optional alternative, numeric vector, proportion of events in the treatment arm
 #' @param rrH1 alternative specification of alternative as risk ratio (treatment / control)
 #' @param orH1 alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).
-#' @param rdH1 alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).
+#' @param rdH1 alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0).
 #' @param r0 risk in the control arm. Required if the alternative is given as risk difference or odds ratio.
 #' @return a list with 3 data.frames: bounds, stopprob and opchar.
 #' bounds has a row for each interim analysis and columns for
@@ -175,6 +192,7 @@ getHarmBound <- function(nevents,
 	alpha_test = NULL, alpha_total = NULL, power = NULL,
 	pH0,
 	maxevents=NULL,
+	icc = NULL,
 	pH1=NULL, 
 	rrH1=NULL, orH1=NULL, rdH1=NULL,
 	r0=NULL){
@@ -199,6 +217,7 @@ getHarmBound <- function(nevents,
 		alpha_test = alpha_test,
 		pH0 = pH0,
 		maxevents = maxevents,
+		icc = icc,
 		pH1 = pH1, 
 		rrH1 = rrH1, orH1 = orH1, rdH1 = rdH1, r0 = r0)
 		
@@ -213,10 +232,11 @@ getHarmBound <- function(nevents,
 #' @param pH0 proportion of events in the treatment arm under the null hypothesis,
 #'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
 #' @param maxevents optional maximum number of events expected for the trial (over both arms), used to calculate the expected number of events
+#' @param icc Intraclass correlation if there is more than one event per patient
 #' @param pH1 optional alternative, numeric vector, proportion of events in the treatment arm
 #' @param rrH1 alternative specification of alternative as risk ratio (treatment / control)
 #' @param orH1 alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).
-#' @param rdH1 alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).
+#' @param rdH1 alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0).
 #' @param r0 risk in the control arm. Required if the alternative is given as risk difference or odds ratio.
 #' @return a list with 3 data.frames: bounds, stopprob and opchar.
 #' bounds has a row for each interim analysis and columns for
@@ -241,9 +261,10 @@ getHarmBound <- function(nevents,
 #'
 getHarmBound1 <- function(nevents, alpha_test, pH0,
 	maxevents=NULL,
-	pH1=NULL, 
-	rrH1=NULL, orH1=NULL, rdH1=NULL,
-	r0=NULL){
+	icc = NULL,
+	pH1 = NULL, 
+	rrH1 = NULL, orH1 = NULL, rdH1 = NULL,
+	r0 = NULL){
 
 	#check alternative
 	nn<-sum(!is.null(pH1) | !is.null(rdH1) | !is.null(rrH1) | !is.null(orH1))
@@ -273,55 +294,10 @@ getHarmBound1 <- function(nevents, alpha_test, pH0,
 		pH1<-as.numeric(pH1)
 	}
 	
-	# create data frame to store results in
-	bounds <- data.frame(totevents=1:max(nevents), treatBound=NA,
-		alphaLevelBound=NA, cutoff=NA)
+	# create boundaries
+	bounds<-findsched(nevents = nevents, alpha_test =alpha_test, pH0 = pH0, icc = icc)
 
-	bound <- NULL
-	for (j in 1:nrow(bounds)) {
-
-		totevents <- bounds$totevents[j]
-
-		if (!(totevents %in% nevents)) {
-			alphaVal<-0
-		} else {
-			alphaVal<-alpha_test
-		}
-
-		## we don't need to do the next few steps unless alphaVal is > 0
-		if (alphaVal <= 0) next
-
-		## choose the lowerBound for searching for the next cutoff value.
-		if (is.null(bound)) {
-			lowerBnd <- ceiling(pH0 * totevents)
-		} else {
-			lowerBnd <- bound
-		}
-
-		valSeq <- totevents:lowerBnd
-
-		upperTailProbs <- cumsum(dbinom(valSeq, totevents, pH0))
-		signif <- (upperTailProbs <= alphaVal)
-
-		## if we have at least one significant value then do...
-		if (isTRUE(signif[1]))	{
-			## get "largest" (last) index for which signif == TRUE
-			largest.index <- max(which(signif))
-
-			## define 'bound' to be the count corresponding to
-			## the 'largest.index'
-			## which we have significance at per-test-level 'alphaVal'
-			bound <- valSeq[largest.index]
-
-			bounds$treatBound[j] <- bound
-			bounds$alphaLevelBound[j] <- upperTailProbs[largest.index]
-			bounds$cutoff[j] <- alphaVal
-		}
-
-	}
-	
-	
-	#bounds:
+	#addumptions
 	assumpt<-c(pH0,pH1)
 	
 	stopprob<-vector(length=1+length(pH1),mode="list")
@@ -334,7 +310,7 @@ getHarmBound1 <- function(nevents, alpha_test, pH0,
 		hyp<-ifelse(i==1,"H0","H1")
 					
 		if (!all(is.na(bounds$treatBound))) {	
-			out <- pNS(Bounds=bounds$treatBound, pH0=assumpt[i])
+			out <- pNS(Bounds=bounds$treatBound, pH=assumpt[i], icc = icc)
 			nstop<-sum(out$Bounds$n*out$Stop,(1-out$totalStopProb)*maxevents)
 			outc<-data.frame(p=assumpt[i],cum_stop_prob=out$totalStopProb,
 				expected_events=nstop,hyp=hyp)			
@@ -403,118 +379,6 @@ getHarmBound1 <- function(nevents, alpha_test, pH0,
 	return(res)
 }
 
-
-
-#' pNS
-#' Helper function which creates an object containing the values of the function P(n,s)
-#' defined by Breslow (1970, JASA) as, for 0 <= s <= n <= N,  the probability
-#' of the binomial random walk S_n reaching S_n = s without "absorption" into
-#' the rejection region (i.e. without hitting any of the stopping bounds).
-#'
-#' @param Bounds Vector of stopping bounds after each event.
-#'	For event totals where stopping is not permitted the 'Bound' should be set to NA.
-#' @param pH0 proportion of events in the treatment arm under the null hypothesis,
-#'	typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)
-#' @param returnPns Whether to inlcude the binomial random walk in the output
-#'
-#' @noRd
-#'
-#' @return list with stopping probabilities and boundaries
-#'
-#' @examples
-#'
-#'	pNS(Bounds=c(rep(NA,5),3), pH0=0.5, returnPns=TRUE)
-#'
-pNS <- function(Bounds, pH0=0.5, returnPns=FALSE){
-
-	N <- length(Bounds)
-
-	if (all(is.na(Bounds))) {
-		stop("The vector provided for argument 'Bounds' contains only NAs.\n",
-			"Exiting...\n\n")
-	}
-
-	if (any(Bounds > (1:N), na.rm=TRUE)) {
-		stop("The bounds provided do not appear to correspond to the",
-			" total number of events (1,2,...,N).\n", "One of more of the bounds are larger",
-			"than their corresponding total.  Exiting...\n\n")
-	}
-
-	## create 'Pns' and 'Stop'. Note that Stop has initial values of 0.
-	Stop <- numeric(N)
-	Pns  <- vector("list", length=N)
-
-	## 'first.bound' is the point at which stopping is first allowed
-	first.bound <- which(!is.na(Bounds))[1]
-
-	if (first.bound == 1)
-	stop("Cannot stop at the first test. Why would you want to?\n\n")
-
-
-	## Initialize the base level (i==1).
-	Pns[[1]] <- c("0" = (1-pH0), "1" = pH0)
-
-	## loop over remaining infection totals, building up the prob.s as we go
-	for (i in 2:N) {
-
-	Pns[[i]] <- structure(numeric(i+1), names= as.character(0:i))
-
-	max.S <- ifelse(is.na(Bounds[i]), i, Bounds[i]-1)
-
-	Pns[[i]]["0"] <- (1-pH0)*Pns[[i-1]]["0"]
-
-	for (s in 1:max.S ) {
-		S         <- as.character(s)
-		S.minus.1 <- as.character(s-1)
-
-		if (s < i) {
-			Pns[[i]][S] <- pH0*Pns[[i-1]][S.minus.1] + (1-pH0)*Pns[[i-1]][S]
-		} else {
-			Pns[[i]][S] <- pH0*Pns[[i-1]][S.minus.1]
-		}
-	}
-	#all probs outside the boundary are 0->trials with are stopped
-	#sum(Pns[[]]) < 1 after first stop
-
-	## 'Stop' is the prob. that we encounter a stopping bound for the first
-	## time at infection count 'i'.  Only computed if stopping is possible,
-	## else remains at initialized value of 0.
-	if (!is.na(Bounds[i])) {
-
-		## If this is the first infection count at which we allow stopping, then
-		## the stop value must be computed allowing for people using non-standard
-		## bounds (i.e. ones that that *don't* begin with bound[n] = n).
-		if ((i == first.bound | is.na(Bounds[i-1])) && Bounds[i] < i ) {
-			## stop prob. =
-			#	having one event less in the previous round * prob of hving a further event plus
-			#	no has already nee
-			## that we were already at/above the number of "success" needed to stop
-			## at the previous infection total (i.e. i-1) (for which we should have
-			## been given a stopping bound, but weren't).
-			Stop[i] <- pH0*Pns[[i-1]][as.character(Bounds[i]-1)] +
-						sum(Pns[[i-1]][as.character(Bounds[i]:(i-1))])
-			} else {
-			## if 'i' is not the the first total at which stopping is allowed, or
-			## if it is, but we have a proper bound (i.e. Bounds[i] = i) then we do
-			## we compute as this:
-			Stop[i] <- pH0*Pns[[i-1]][as.character(Bounds[i]-1)]
-			}
-		}
-	}
-
-	outObj <- list(
-		totalStopProb = sum(Stop),
-		Stop = Stop,
-		Bounds  = data.frame(n=1:N, StoppingBound=Bounds),
-		N = N,
-		pH0 = pH0 )
-
-	if (isTRUE(returnPns)) {
-		outObj$Pns <- Pns
-	}
-
-	return(outObj)
-}
 
 
 #' Convert the proportion of events in the treatment arms to risk differences and ratios (and vice versa)
@@ -589,3 +453,4 @@ convertRisks<-function(eprop=NULL,etotal=NULL,
 	colnames(res)<-c("eprop","etotal","n0","n1","r0","r1","rd","rr","or")
 	return(res)
 }
+

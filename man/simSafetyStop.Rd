@@ -13,7 +13,9 @@ simSafetyStop(
   orH1 = NULL,
   rdH1 = NULL,
   r0 = NULL,
-  n = NULL
+  n = NULL,
+  icc = NULL,
+  correct = TRUE
 )
 }
 \arguments{
@@ -35,6 +37,10 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 \item{r0}{risk in the control arm. Required if the effect is given as risk difference or odds ratio.}
 
 \item{n}{total number of participants. Required if the effect is given as risk difference.}
+
+\item{icc}{intraclass correlation if there is more than one event per patient}
+
+\item{correct}{logical, whether to use icc for boundary construction}
 }
 \value{
 list with a dataframe with number of events in each group plus upper limit for stopping and indicator for whether stopped, plus indicators number of stops and time points at first stop
@@ -45,7 +51,7 @@ the risk difference (rdH1), risk ratio (rrH1) or odds ratio (orH1).
 }
 \examples{
 set.seed(1)	
-simSafetyStop(nevents=seq(10,100,by=10),pH0 = 0.5, pH1 = 0.6,alpha_test=0.025)
+simSafetyStop(nevents=seq(10,100,by=10),pH0 = 0.5, pH1 = 0.6, alpha_test=0.025)
 
 set.seed(1)	
 simSafetyStop(nevents=seq(10,100,by=10),pH0 = 0.5, rrH1 = 0.6/(1-0.6), alpha_test=0.025)
