@@ -1,11 +1,19 @@
-# Find stopping boundary via binomial exact tests
+# Find stopping boundary via binomial or beta-binomial distribution. For the latter, the overdispersion factor (or design effect) by which the variance exceeds the regular binomial variance is printed.
 
-Find stopping boundary via binomial exact tests
+Find stopping boundary via binomial or beta-binomial distribution. For
+the latter, the overdispersion factor (or design effect) by which the
+variance exceeds the regular binomial variance is printed.
 
 ## Usage
 
 ``` r
-findbound(n, alpha_test = 0.025, pH0 = 0.5, alternative = "greater")
+findbound(
+  n,
+  alpha_test = 0.025,
+  pH0 = 0.5,
+  alternative = "greater",
+  icc = NULL
+)
 ```
 
 ## Arguments
@@ -27,6 +35,10 @@ findbound(n, alpha_test = 0.025, pH0 = 0.5, alternative = "greater")
 - alternative:
 
   direction of alternative, "less" or "greater"
+
+- icc:
+
+  intraclass correlation if there is more than one event per patient
 
 ## Value
 

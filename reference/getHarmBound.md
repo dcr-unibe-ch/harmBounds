@@ -17,6 +17,7 @@ getHarmBound(
   power = NULL,
   pH0,
   maxevents = NULL,
+  icc = NULL,
   pH1 = NULL,
   rrH1 = NULL,
   orH1 = NULL,
@@ -55,6 +56,10 @@ getHarmBound(
   optional maximum number of events expected for the trial (over both
   arms), used to calculate the expected number of events
 
+- icc:
+
+  intraclass correlation if there is more than one event per patient
+
 - pH1:
 
   optional alternative, numeric vector, proportion of events in the
@@ -73,8 +78,7 @@ getHarmBound(
 - rdH1:
 
   alternative specification of alternative as risk difference
-  (treatment - control). Requires the control proportion (r0) and the
-  number of participants (n).
+  (treatment - control). Requires the control proportion (r0).
 
 - r0:
 
@@ -98,9 +102,16 @@ and each alternative.
 
 ## Details
 
-The rejection region for the binomial exact tests must be given for
-either each test (alpha_test), overall (alpha_total, the family-wise
-error rate) or by the targetted power for the specified alternative.
+If there are several events per patient, the intraclass correlation
+coefficient has to be given and a beta-binomial framework is used. The
+overdispersion factor (or design effect) by which the variance exceeds
+the regular binomial variance is printed. Note that the effective sample
+size is reduced by that factor.
+
+The rejection region for the binomial or beta-binomial exact tests must
+be given for either each test (alpha_test), overall (alpha_total, the
+family-wise error rate) or by the targetted power for the specified
+alternative.
 
 ## See also
 

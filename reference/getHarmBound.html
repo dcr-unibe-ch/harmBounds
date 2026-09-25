@@ -15,7 +15,7 @@ would lead to a rejection of H0 (equal distribution) and a stopping for safety."
 
     <a class="navbar-brand me-2" href="../index.html">harmBounds</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,6 +59,7 @@ would lead to a rejection of H0 (equal distribution) and a stopping for safety.<
 <span>  power <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">pH0</span>,</span>
 <span>  maxevents <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  icc <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pH1 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rrH1 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  orH1 <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -93,7 +94,12 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)</p></d
 
 
 <dt id="arg-maxevents">maxevents<a class="anchor" aria-label="anchor" href="#arg-maxevents"></a></dt>
-<dd><p>optional maximum number of events expected for the trial (over both arms), used to calculate the expected number of events</p></dd>
+<dd><p>optional maximum number of events expected for the trial (over both arms),
+used to calculate the expected number of events</p></dd>
+
+
+<dt id="arg-icc">icc<a class="anchor" aria-label="anchor" href="#arg-icc"></a></dt>
+<dd><p>intraclass correlation if there is more than one event per patient</p></dd>
 
 
 <dt id="arg-ph-">pH1<a class="anchor" aria-label="anchor" href="#arg-ph-"></a></dt>
@@ -109,7 +115,7 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)</p></d
 
 
 <dt id="arg-rdh-">rdH1<a class="anchor" aria-label="anchor" href="#arg-rdh-"></a></dt>
-<dd><p>alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).</p></dd>
+<dd><p>alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0).</p></dd>
 
 
 <dt id="arg-r-">r0<a class="anchor" aria-label="anchor" href="#arg-r-"></a></dt>
@@ -136,7 +142,11 @@ for the null and each alternative.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The rejection region for the binomial exact tests must be given for either
+    <p>If there are several events per patient, the intraclass correlation coefficient has to be given
+and a beta-binomial framework is used. The overdispersion factor (or design effect)
+by which the variance exceeds the regular binomial variance is printed. Note that the
+effective sample size is reduced by that factor.</p>
+<p>The rejection region for the binomial or beta-binomial exact tests must be given for either
 each test (alpha_test), overall (alpha_total, the family-wise error rate) or
 by the targetted power for the specified alternative.</p>
     </div>

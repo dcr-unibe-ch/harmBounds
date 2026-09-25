@@ -55,7 +55,9 @@ do. Check the vignette for further examples.
   : Convert the proportion of events in the treatment arms to risk
   differences and ratios (and vice versa)
 - [`findbound()`](https://dcr-unibe-ch.github.io/harmBounds/reference/findbound.md)
-  : Find stopping boundary via binomial exact tests
+  : Find stopping boundary via binomial or beta-binomial distribution.
+  For the latter, the overdispersion factor (or design effect) by which
+  the variance exceeds the regular binomial variance is printed.
 - [`getAlphaPerTest()`](https://dcr-unibe-ch.github.io/harmBounds/reference/getAlphaPerTest.md)
   : Test-wise alpha necessary to control either the family-wise type I
   error or the power at a specified level

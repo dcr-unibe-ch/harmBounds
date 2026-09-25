@@ -16,7 +16,9 @@ simSafetyStop(
   orH1 = NULL,
   rdH1 = NULL,
   r0 = NULL,
-  n = NULL
+  n = NULL,
+  icc = NULL,
+  correct = TRUE
 )
 ```
 
@@ -65,6 +67,14 @@ simSafetyStop(
   total number of participants. Required if the effect is given as risk
   difference.
 
+- icc:
+
+  intraclass correlation if there is more than one event per patient
+
+- correct:
+
+  logical, whether to use icc for boundary construction
+
 ## Value
 
 list with a dataframe with number of events in each group plus upper
@@ -75,7 +85,7 @@ number of stops and time points at first stop
 
 ``` r
 set.seed(1)  
-simSafetyStop(nevents=seq(10,100,by=10),pH0 = 0.5, pH1 = 0.6,alpha_test=0.025)
+simSafetyStop(nevents=seq(10,100,by=10),pH0 = 0.5, pH1 = 0.6, alpha_test=0.025)
 #> $tests
 #>    nevents n1 n0 ulim   out
 #> 1       10  5  5    9 FALSE

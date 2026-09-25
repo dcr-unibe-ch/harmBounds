@@ -14,6 +14,7 @@ getAlphaPerTest(
   pH0 = 0.5,
   alpha.interval = c(10^(-10), 1),
   maxevents = NULL,
+  icc = NULL,
   pH1 = NULL,
   rrH1 = NULL,
   orH1 = NULL,
@@ -52,6 +53,10 @@ getAlphaPerTest(
   optional maximum number of events expected for the trial (over both
   arms), used to calculate the expected number of events
 
+- icc:
+
+  intraclass correlation if there is more than one event per patient
+
 - pH1:
 
   optional alternative, numeric vector, proportion of events in the
@@ -64,14 +69,13 @@ getAlphaPerTest(
 
 - orH1:
 
-  alternative specification of alternative as risk ratio (treatment /
+  alternative specification of alternative as odds ratio (treatment /
   control). Requires the control proportion (r0).
 
 - rdH1:
 
   alternative specification of alternative as risk difference
-  (treatment - control). Requires the control proportion (r0) and the
-  number of participants (n).
+  (treatment - control). Requires the control proportion (r0).
 
 - r0:
 
@@ -85,6 +89,11 @@ getAlphaPerTest(
 ## Value
 
 Test-wide alpha
+
+## Details
+
+If there are several events per patient, the intraclass correlation
+coefficient has to be given and a beta-binomial framework is used.
 
 ## Examples
 

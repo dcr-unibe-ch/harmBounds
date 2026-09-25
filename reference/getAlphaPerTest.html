@@ -9,7 +9,7 @@ The power requires the specification of an alternative via one of pH1, rrH1, orH
 
     <a class="navbar-brand me-2" href="../index.html">harmBounds</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,7 @@ The power requires the specification of an alternative via one of pH1, rrH1, orH
 <span>  pH0 <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  alpha.interval <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span><span class="op">^</span><span class="op">(</span><span class="op">-</span><span class="fl">10</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  maxevents <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  icc <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  pH1 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rrH1 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  orH1 <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -89,6 +90,10 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)</p></d
 used to calculate the expected number of events</p></dd>
 
 
+<dt id="arg-icc">icc<a class="anchor" aria-label="anchor" href="#arg-icc"></a></dt>
+<dd><p>intraclass correlation if there is more than one event per patient</p></dd>
+
+
 <dt id="arg-ph-">pH1<a class="anchor" aria-label="anchor" href="#arg-ph-"></a></dt>
 <dd><p>optional alternative, numeric vector, proportion of events in the treatment arm</p></dd>
 
@@ -98,11 +103,11 @@ used to calculate the expected number of events</p></dd>
 
 
 <dt id="arg-orh-">orH1<a class="anchor" aria-label="anchor" href="#arg-orh-"></a></dt>
-<dd><p>alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).</p></dd>
+<dd><p>alternative specification of alternative as odds ratio (treatment / control). Requires the control proportion (r0).</p></dd>
 
 
 <dt id="arg-rdh-">rdH1<a class="anchor" aria-label="anchor" href="#arg-rdh-"></a></dt>
-<dd><p>alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).</p></dd>
+<dd><p>alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0).</p></dd>
 
 
 <dt id="arg-r-">r0<a class="anchor" aria-label="anchor" href="#arg-r-"></a></dt>
@@ -116,6 +121,11 @@ used to calculate the expected number of events</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>Test-wide alpha</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>If there are several events per patient, the intraclass correlation coefficient has to be given
+and a beta-binomial framework is used.</p>
     </div>
 
     <div class="section level2">

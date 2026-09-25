@@ -6,25 +6,26 @@ event based approach.
 
 The idea is that under the null hypothesis of no safety concern, safety
 events are expected to occur at a frequency proportional to the
-randomization ratio. We can therefore do one sample binomial exact tests
-on the proportion of events in the treatment arm. Evidence that this
-proportion higher than what would be expected from randomization would
-indicate a safety problem.
+randomization ratio. Assuming a single event per patient, we can do one
+sample binomial exact tests on the proportion of events in the treatment
+arm. In case of several events, we can use a beta-binomial framework,
+assuming a certain intra-class correlation coefficient. Evidence that
+the proportion of events in the treatment arm is higher than what is
+expected from randomization indicates a safety problem.
 
 The safety monitoring can be done continuously after every event or at a
 pre-specified total number of events. The nominal test-wise alpha would
 be calibrated to obtain desired properties, such as a certain proportion
 of stopping under alternative scenarios of some degree of safety
-problems (the power). An overall Type I error control can also be
+problems (the power). An overall type I error control can also be
 implemented but we would usually not recommend that for safety testing,
-as the consequence of a Type II error (not stopping for safety if the
-treatment is not safe) is arguably worse than of a Type I error
+as the consequence of a type II error (not stopping for safety if the
+treatment is not safe) is arguably worse than of a type I error
 (stopping if the treatment is safe).
 
 The procedure is computationally efficient and fully reproducible, as
 all calculations are exact and derived in closed form from the binomial
-distribution. And it is not limited to a single event per participant or
-to a specific type of event.
+or the beta-binomial distribution.
 
 ## Calculation of boundaries
 
@@ -81,13 +82,11 @@ and optionally alternative hypotheses (see below). Data frame *opchar*
 shows the cumulative stopping probability and the expected number of
 events for each hypothesis.
 
-In the example above, the overall Type I error of the safety testing is
-7.2%. If we stop at 100 total events (by default, even if the boundary
-is not breached), the expected number of events is 96.
-
-Typically, the trial might not be stopped at the last interim analysis,
-which can be specified using the *maxevents* option. The option only
-influences the expected events.
+In the example above, the overall type I error of the safety testing is
+7.2%. The expected number of events (i.e. the average if the trial would
+be repeated) is 96. Typically, the trial might not be stopped at the
+last interim analysis, which can be specified using the *maxevents*
+option. The option only influences the expected events.
 
 ``` r
 
@@ -102,15 +101,16 @@ hb$opchar
 
 Instead of using an alpha for each test, we can also control the
 family-wise type I error rate at a specific level (even though we do not
-necessarily recommend that). Refer to [Choosing the test-wise
-alpha](#sec-alpha) for more details.
+necessarily recommend that). Refer to the section on [Choosing the
+test-wise alpha](#sec-alpha) for more details.
 
 ``` r
 
-hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_total = 0.05, pH0 = 0.5)
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_total = 0.05, pH0 = 0.5,
+  maxevents = 150)
 hb$opchar
 #>     p cum_stop_prob expected_events hyp
-#> 1 0.5    0.05104241        97.33673  H0
+#> 1 0.5    0.05104241        144.7846  H0
 ```
 
 The overall stopping probability under H0 (the type I error) is 5.1%,
@@ -122,17 +122,17 @@ Another more sensible option would be to target the type II error (or
 the power) for a specific alternative. This option requires the
 specification of an alternative, e.g. assuming that 60% of the events
 occuring in the experimental arm would indicate a safety problem (see
-[Operating characteristics](#sec-opchar) for more details about the
-alternatives).
+the section on [Operating characteristics](#sec-opchar) for more details
+about the alternatives).
 
 ``` r
 
 hb<-getHarmBound(nevents = seq(10, 100, by = 10), power = 0.8, 
-  pH0 = 0.5, pH1 = 0.6)
+  pH0 = 0.5, pH1 = 0.6, maxevents = 150)
 hb$opchar
 #>     p cum_stop_prob expected_events hyp
-#> 1 0.5     0.1980100        87.63776  H0
-#> 2 0.6     0.8018467        52.56440  H1
+#> 1 0.5     0.1980100       127.73727  H0
+#> 2 0.6     0.8018467        62.47206  H1
 ```
 
 Specifying *alpha_total* or *power* is much slower as it relies on an
@@ -214,8 +214,7 @@ hypothesis can be specified as
 
 - rdH1: the risk difference (treatment minus control), with 0 being the
   null scenario and numbers \>0 indicating a safety problem. Here the
-  control proportion (r0) and the total number of participants (n) have
-  to be specified.
+  control proportion (r0) has to be specified.
 
 - orH1: the odds ratio (treatment / control), with 1 being the null
   scenario and number \>1 indicating a safety problem. Here the control
@@ -407,14 +406,14 @@ ggplot(hbd, aes(x = rr, y = cum_stop_prob, colour=alpha)) +
 The test-wise alpha that leads to a reasonable stopping probability
 under an appropriate alternative can be selected. However, the steepness
 of the curve is not influenced by the alpha. We can only choose between
-making more Type I or II errors but not reduce the overall error rate.
+making more type I or II errors but not reduce the overall error rate.
 
 We could e.g. specify that at least 70% of the trials should be stopped
 if the risk of having a safety event increase by half (i.e. a risk ratio
 of 1.5), i.e. a test-wise alpha of close to 0.05. However, this would
 also lead to a stopping of 12.5% of the trials under the null.
 
-On the other hand, if we control the Type I error at 5% using a
+On the other hand, if we control the type I error at 5% using a
 test-wise alpha of 0.0176, only 55% of the trials are stopped if there
 is a safety problem with a risk ratio of 1.5.
 
@@ -458,7 +457,8 @@ curves), we would need a higher total number of events:
 ``` r
 
 
-nelist<-list(seq(10, 20, by = 10),seq(10, 50, by = 10), seq(10, 100, by = 10), seq(10, 200, by = 10))
+nelist<-list(seq(10, 20, by = 10),seq(10, 50, by = 10), seq(10, 100, by = 10), 
+  seq(10, 200, by = 10))
 
 hbl<-lapply(nelist,function(x)
   getHarmBound(nevents = x, alpha_test = 0.025, pH0 = 0.5,
@@ -478,3 +478,78 @@ ggplot(hbd, aes(x = p, y = cum_stop_prob, colour=ni)) +
 ```
 
 ![](harmBounds_files/figure-html/unnamed-chunk-18-1.png)
+
+## Correlated data
+
+If patients can have more than one event, the binomial boundaries are no
+longer valid because the actual variance is increased. However, we can
+use a beta-binomial framework. That needs the specification of a
+intraclass correlation coefficient (*icc*).
+
+The overdispersion factor (or design effect) by which the beta-binomial
+variance exceeds the regular binomial variance corresponds to 1 +
+(n - 1) \* icc and is printed by the function. Note that the effective
+sample size is reduced by that factor which results in a substantial
+loss of power, even for small ICCs.
+
+For example, with an ICC of 0.05, we would only stop 19% of the trials
+with 60% events in the treatment arm, compared to 59% without
+correlation.
+
+``` r
+
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025,
+  pH0 = 0.5, pH1 = 0.6, maxevents = 150)
+hb$opchar
+#>     p cum_stop_prob expected_events hyp
+#> 1 0.5    0.07163432        142.2242  H0
+#> 2 0.6    0.59188721         91.2001  H1
+
+hb<-getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025,
+  pH0 = 0.5, pH1 = 0.6, maxevents = 150, icc = 0.05)
+#> [1] "Overdispersion factor: 1.45, 1.95, 2.45, 2.95, 3.45, 3.95, 4.45, 4.95, 5.45, 5.95"
+hb$opchar
+#>     p cum_stop_prob expected_events hyp
+#> 1 0.5    0.04807753        144.5795  H0
+#> 2 0.6    0.18755067        128.8848  H1
+```
+
+The effective sample size can be calculated using the overdispersion
+factor, which captures the increase in variance due to the correlation
+(the design effect). With an ICC of 0.05, the effective sample size is
+much smaller than the number of events:
+
+``` r
+
+nevents<-seq(10, 100, by = 10)
+#overdispersion
+ods<-1 + (nevents - 1) * 0.05
+ods 
+#>  [1] 1.45 1.95 2.45 2.95 3.45 3.95 4.45 4.95 5.45 5.95
+#effective sample size:
+round(nevents/ods)
+#>  [1]  7 10 12 14 14 15 16 16 17 17
+```
+
+We can plot this loss of power for different ICCs:
+
+``` r
+
+iccs<-c(0,0.01,0.02,0.05,0.1)
+
+hbl<-lapply(iccs,function(x)
+  getHarmBound(nevents = seq(10, 100, by = 10), alpha_test = 0.025,
+  pH0 = 0.5, pH1 = seq(0,1,l=100), maxevents = 150, icc = x)$opchar)
+
+hbd<-data.frame(do.call(rbind,hbl),icc=rep(iccs,each=nrow(hbl[[1]])))
+hbd$icc<-as.factor(round(hbd$icc,2))
+
+ggplot(hbd, aes(x = p, y = cum_stop_prob, colour=icc)) + 
+    geom_line() +
+    ylab("Stopping probability") +
+    xlab("Proportion of events in treatment arm") +
+    scale_x_continuous(breaks=seq(0,1,by=0.1),limits=c(0.2,0.8)) +
+    scale_y_continuous(breaks=seq(0,1,by=0.2))
+```
+
+![](harmBounds_files/figure-html/unnamed-chunk-22-1.png)

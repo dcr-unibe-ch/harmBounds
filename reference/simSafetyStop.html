@@ -9,7 +9,7 @@ the risk difference (rdH1), risk ratio (rrH1) or odds ratio (orH1)."></head><bod
 
     <a class="navbar-brand me-2" href="../index.html">harmBounds</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.0.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +52,9 @@ the risk difference (rdH1), risk ratio (rrH1) or odds ratio (orH1).</p>
 <span>  orH1 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rdH1 <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  r0 <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  n <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  n <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  icc <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  correct <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -96,6 +98,14 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)</p></d
 <dt id="arg-n">n<a class="anchor" aria-label="anchor" href="#arg-n"></a></dt>
 <dd><p>total number of participants. Required if the effect is given as risk difference.</p></dd>
 
+
+<dt id="arg-icc">icc<a class="anchor" aria-label="anchor" href="#arg-icc"></a></dt>
+<dd><p>intraclass correlation if there is more than one event per patient</p></dd>
+
+
+<dt id="arg-correct">correct<a class="anchor" aria-label="anchor" href="#arg-correct"></a></dt>
+<dd><p>logical, whether to use icc for boundary construction</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -105,7 +115,7 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)</p></d
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span>  </span></span>
-<span class="r-in"><span><span class="fu">simSafetyStop</span><span class="op">(</span>nevents<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>,<span class="fl">100</span>,by<span class="op">=</span><span class="fl">10</span><span class="op">)</span>,pH0 <span class="op">=</span> <span class="fl">0.5</span>, pH1 <span class="op">=</span> <span class="fl">0.6</span>,alpha_test<span class="op">=</span><span class="fl">0.025</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">simSafetyStop</span><span class="op">(</span>nevents<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">10</span>,<span class="fl">100</span>,by<span class="op">=</span><span class="fl">10</span><span class="op">)</span>,pH0 <span class="op">=</span> <span class="fl">0.5</span>, pH1 <span class="op">=</span> <span class="fl">0.6</span>, alpha_test<span class="op">=</span><span class="fl">0.025</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $tests</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    nevents n1 n0 ulim   out</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1       10  5  5    9 FALSE</span>

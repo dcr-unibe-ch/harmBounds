@@ -1,5 +1,9 @@
 # Changelog
 
+## harmBounds 2.0.0
+
+allow for multiple events per patient using a beta-binomial framework
+
 ## harmBounds 1.2.0
 
 rename option totalAlpha to alpha_total use arm instead of group add
