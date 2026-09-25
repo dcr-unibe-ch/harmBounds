@@ -14,6 +14,8 @@
 #' @param rdH1 risk difference (experimental - control). Requires the control proportion (r0) and the number of participants (n).
 #' @param r0 risk in the control arm. Required if the effect is given as risk difference or odds ratio.
 #' @param n total number of participants. Required if the effect is given as risk difference.
+#' @param icc intraclass correlation if there is more than one event per patient
+#' @param correct logical, whether to use icc for boundary construction
 #'
 #' @return list with a dataframe with number of events in each group plus upper limit for stopping and indicator for whether stopped, plus indicators number of stops and time points at first stop
 #'
@@ -23,7 +25,7 @@
 #'
 #' @examples
 #'	set.seed(1)	
-#'	simSafetyStop(nevents=seq(10,100,by=10),pH0 = 0.5, pH1 = 0.6,alpha_test=0.025)
+#'	simSafetyStop(nevents=seq(10,100,by=10),pH0 = 0.5, pH1 = 0.6, alpha_test=0.025)
 #'	
 #'	set.seed(1)	
 #'	simSafetyStop(nevents=seq(10,100,by=10),pH0 = 0.5, rrH1 = 0.6/(1-0.6), alpha_test=0.025)
@@ -33,7 +35,8 @@ simSafetyStop <- function(nevents,
 	pH0=0.5,
 	alpha_test=0.025,
 	pH1=NULL, rrH1=NULL, orH1=NULL,rdH1=NULL,
-	r0=NULL, n=NULL) {
+	r0=NULL, n=NULL,
+	icc = NULL, correct=TRUE) {
 	
 	nn<-sum(!is.null(pH1) | is.null(rdH1) | is.null(rrH1) | is.null(orH1))
 	if (nn!=1) {
@@ -52,15 +55,50 @@ simSafetyStop <- function(nevents,
 		pH1<-convertRisks(rd=rdH1, rr=rrH1, or=orH1, r0=r0, n0=(1-pH0), n1=pH0)[,"eprop"]
 	}
 	
-	group<-rbinom(max(nevents),1,pH1)
+	Nmax <- max(nevents)
+
+	if (is.null(icc) || icc==0) {
+		group<-rbinom(Nmax,1,pH1)		
+	} else {
+		
+		theta <- (1 / icc) - 1
+		a     <- pH1 * theta
+		b     <- (1 - pH1) * theta
+
+		group <- numeric(Nmax)
+
+		# Track the running beta-urn parameters dynamically
+		current_a <- a
+		current_b <- b
+
+		for (i in 1:Nmax) {
+		  # The probability that the i-th event belongs to Group 1
+		  pi <- current_a / (current_a + current_b)
+		  
+		  # Draw the event group assignment
+		  event_group <- rbinom(1, 1, pi)
+		  group[i]  <- event_group
+		  
+		  # Update the urn parameters (reinforces the group that just got an event)
+		  if (event_group == 1) {
+			current_a <- current_a + 1
+		  } else {
+			current_b <- current_b + 1
+		  }
+		}
+	}
 	n1<-cumsum(group)[nevents]
 	n0<-nevents-n1
+		
 	
 	dat<-data.frame(nevents,n1,n0)
 	
-	ulim<-vapply(dat$nevents,function(x) 
-	findbound(x, alpha_test=alpha_test, alternative="greater", pH0=pH0),
-	numeric(1))
+	if (is.null(icc) || correct==FALSE) {
+		ulim<-findbound(dat$nevents, alpha_test=alpha_test, alternative="greater", pH0=pH0)
+	} else {
+		ulim<-findbound(dat$nevents, alpha_test=alpha_test, alternative="greater", pH0=pH0, icc = icc)
+	}
+	
 	
 	dat<-cbind(dat,ulim)
 	dat$out<-with(dat,n1>=ulim)

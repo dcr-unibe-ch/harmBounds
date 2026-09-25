@@ -12,6 +12,7 @@ getAlphaPerTest(
   pH0 = 0.5,
   alpha.interval = c(10^(-10), 1),
   maxevents = NULL,
+  icc = NULL,
   pH1 = NULL,
   rrH1 = NULL,
   orH1 = NULL,
@@ -35,13 +36,15 @@ typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 \item{maxevents}{optional maximum number of events expected for the trial (over both arms),
 used to calculate the expected number of events}
 
+\item{icc}{intraclass correlation if there is more than one event per patient}
+
 \item{pH1}{optional alternative, numeric vector, proportion of events in the treatment arm}
 
 \item{rrH1}{alternative specification of alternative as risk ratio (treatment / control)}
 
-\item{orH1}{alternative specification of alternative as risk ratio (treatment / control). Requires the control proportion (r0).}
+\item{orH1}{alternative specification of alternative as odds ratio (treatment / control). Requires the control proportion (r0).}
 
-\item{rdH1}{alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0) and the number of participants (n).}
+\item{rdH1}{alternative specification of alternative as risk difference (treatment - control). Requires the control proportion (r0).}
 
 \item{r0}{risk in the control arm. Required if the alternative is given as risk difference or odds ratio.}
 
@@ -53,6 +56,10 @@ Test-wide alpha
 \description{
 Exactly one of alpha_total or power have to be specified.
 The power requires the specification of an alternative via one of pH1, rrH1, orH1 or rdH1.
+}
+\details{
+If there are several events per patient, the intraclass correlation coefficient has to be given
+and a beta-binomial framework is used.
 }
 \examples{
 #Control overall family-wise type I error:

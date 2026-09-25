@@ -2,9 +2,17 @@
 % Please edit documentation in R/findbound.R
 \name{findbound}
 \alias{findbound}
-\title{Find stopping boundary via binomial exact tests}
+\title{Find stopping boundary via binomial or beta-binomial distribution.
+For the latter, the overdispersion factor (or design effect)
+by which the variance exceeds the regular binomial variance is printed.}
 \usage{
-findbound(n, alpha_test = 0.025, pH0 = 0.5, alternative = "greater")
+findbound(
+  n,
+  alpha_test = 0.025,
+  pH0 = 0.5,
+  alternative = "greater",
+  icc = NULL
+)
 }
 \arguments{
 \item{n}{total number of events}
@@ -15,12 +23,16 @@ findbound(n, alpha_test = 0.025, pH0 = 0.5, alternative = "greater")
 typically based on randomization ratio (e.g. 0.5 for a 1:1 randomization)}
 
 \item{alternative}{direction of alternative, "less" or "greater"}
+
+\item{icc}{intraclass correlation if there is more than one event per patient}
 }
 \value{
 number of events in the experimental group that would lead to a stopping
 }
 \description{
-Find stopping boundary via binomial exact tests
+Find stopping boundary via binomial or beta-binomial distribution.
+For the latter, the overdispersion factor (or design effect)
+by which the variance exceeds the regular binomial variance is printed.
 }
 \examples{
 findbound(n=20, alpha_test=0.025, pH0 = 0.5, alternative="greater")
